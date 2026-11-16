@@ -64,7 +64,7 @@ and components; the back includes a printed quick reference for GPIOs and buses.
 | `examples/` | Small programs demonstrating the public API. |
 | `old/python/` | Archived course samples and hardware libraries. These are reference examples and do not follow this project's Python standards. |
 | `hardware/ebadge/` | eBadge setup guide and reference material. |
-| `resize_image.py` | Host utility that prepares 24-bit BMP files for the badge display. |
+| `resize_image.py` | Host utility that prepares one image or a directory tree of 24-bit BMPs for the badge display. |
 | `byui-cse.png` | Logo asset used by the display example. |
 | `byui-cse_badge.bmp` | Prepared 320 × 115 logo image used by the display example. |
 
@@ -228,9 +228,65 @@ The programs in [`examples/`](examples/) demonstrate the intended API:
 3. Play a tone when button A is pressed.
 4. Display the BYU-Idaho CSE logo from `byui-cse.png`.
 5. Draw pixels, lines, and outlined and filled rectangles.
+6. Cycle through prepared photos in a directory.
+7. Play Snake with the directional buttons.
 
 These programs use `pybadge.py`. Some physical hardware behavior still needs
 validation; see [TODO.md](TODO.md) for remaining work and hardware limitations.
+
+### Build a simple program
+
+Create `my_program.py` in the repository root or in a work folder. Initialize
+the library, check a button with `is_pressed()`, and use the display and RGB
+LED helpers:
+
+```python
+import pybadge
+
+
+def main():
+    pybadge.initialize()
+    last_pressed = None
+    try:
+        pybadge.display_clear()
+        pybadge.display_text("Hold A to light blue", x=8, y=8)
+        while True:
+            pressed = pybadge.is_pressed(pybadge.BUTTON_A)
+            if pressed:
+                pybadge.set_rgb_led("blue")
+            else:
+                pybadge.turn_rgb_led_off()
+
+            if pressed != last_pressed:
+                message = "Button A is down" if pressed else "Button A is up"
+                pybadge.display_clear()
+                pybadge.display_text(message, x=8, y=8)
+                last_pressed = pressed
+
+            pybadge.pause(20)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        pybadge.shutdown()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+Run the program in the computer simulator using the [simulator instructions](#run-the-terminal-simulator).
+To run it on the badge, connect the board and deploy the library and program:
+
+```sh
+python deploy.py --port <PORT> --install-library my_program.py
+```
+
+`is_pressed()` returns `True` while the named button is held. The display
+helpers use pixel coordinates with `(0, 0)` at the top-left; `display_text()`
+draws a line of text, and `display_clear()` fills the screen before drawing.
+Use other names such as `BUTTON_B`, `BUTTON_UP`, and `BUTTON_LEFT` to read the
+other buttons. Examples are ordinary Python programs and can be adapted
+without editing `pybadge.py`.
 Before running the logo example, prepare the PNG for the display with the
 host utility. Install Pillow if it is not already available:
 
@@ -242,6 +298,29 @@ python resize_image.py byui-cse.png
 This creates `byui-cse_badge.bmp`, an uncompressed 24-bit BMP resized to fit
 the 320 × 240 display while preserving the source aspect ratio. Small source
 images are not enlarged.
+
+To prepare a directory of photos for the board, convert the whole directory
+tree into a separate sibling folder, then deploy that folder:
+
+```sh
+python resize_image.py photos/
+python deploy.py --port <PORT> --directory photos_badge/
+```
+
+The converter writes BMP files under `photos_badge/`, preserving subfolders
+and using `_badge.bmp` filenames. `deploy.py --directory` copies the directory
+tree to `/photos_badge/` on the badge.
+
+For a repeating slideshow, deploy the photo folder with the picture-frame
+example and copy the example as the program:
+
+```sh
+python deploy.py --port <PORT> --install-library --directory photos_badge/ examples/06_picture_frame.py
+```
+
+The frame cycles through BMP files directly inside `photos_badge/`, showing
+each for three seconds. Images in nested subfolders are deployed but are not
+included in this simple slideshow.
 
 ### Deploy programs to the badge
 
@@ -274,6 +353,17 @@ manual test runner without replacing `/main.py`:
 ```sh
 python deploy.py --port <PORT> --asset hardware_tests/run_pybadge_checks.py
 ```
+
+Use `--directory DIR` to recursively copy a complete folder to the badge,
+preserving its name and nested paths. For example, this uploads local `photos/`
+to `/photos/`:
+
+```sh
+python deploy.py --port <PORT> --directory photos
+```
+
+You can combine `--directory` with `--install-library`, a program, and asset
+options in one deployment command.
 
 The deploy helper starts `mpremote` through the same Python interpreter used
 to run the script. The package must be installed in that environment. The

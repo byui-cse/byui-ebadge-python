@@ -30,7 +30,7 @@
 - [x] Add simple display drawing helpers for pixels, lines, and outlined or filled rectangles in the applicable backends.
 - [x] Implement accelerometer readings in g and battery-voltage readings in volts in applicable backends. Hardware battery readings use the nominal ×16 divider ratio and still require physical calibration; never describe voltage as a charge percentage.
 - [x] Implement external GPIO input/output helpers, `HIGH`/`LOW` checks, PWM output, analog voltage measurement, and addressable LED strip controls in each applicable backend. GPIO13–GPIO18 (`IO13`–`IO18`) are ADC2 channels 2–7 on the ESP32-S3; analog reads require Wi-Fi inactive.
-- [ ] Validate `read_voltage()` accuracy and ADC behavior with the target firmware on physical V4.1.1 hardware.
+- [x] Validate `read_voltage()` accuracy and ADC behavior with the target firmware on physical V4.1.1 hardware. The human-run `HardwareBackend` check reported ADC voltage PASS; measured values were not included in the report.
 - [ ] Calibrate normalized joystick direction and center behavior on physical V4.1.1 hardware before enabling hardware-mode `joystick()`.
 - [x] Document the standard jumper-bridge routing assumed by built-in peripheral helpers and the current procedure for nonstandard routing: use GPIO helpers for the actual signal or restore the standard bridge positions.
 - [x] Create a host-side `resize_image.py` utility that accepts common PNG/JPG inputs, preserves aspect ratio, fits them to the 320 × 240 badge display, and outputs a 24-bit BMP supported by the hardware image helper.
@@ -43,6 +43,7 @@
 - [x] Add an interactive hardware test program for `HardwareBackend`, independently of `pybadge.py`, covering the same physical components where practical.
 - [x] Include accelerometer and battery-voltage checks in headless and interactive hardware validation. These are not required in the focused terminal simulator.
 - [x] Document how to run automated tests on a computer and how to run/interpret the interactive checks on the physical badge.
+- [x] Have a human upload and run `hardware_tests/run_hardware_backend_checks.py` on a physical V4.1.1 badge. Reported: PASS for A/B/up/down/left/right buttons, RGB indicator, addressable LED strip, buzzer, display, Wi-Fi scan, GPIO HIGH/LOW loopback, GPIO PWM, ADC voltage, accelerometer, and battery/selected-rail voltage; joystick was skipped pending calibration.
 - [ ] Have a human upload and run `hardware_tests/run_pybadge_checks.py` on a physical V4.1.1 badge; record the results and investigate any failures.
 
 ## Example programs
@@ -53,9 +54,22 @@
 - [x] Example 4: display the BYU-Idaho logo from a prepared display image (`examples/04_display_logo.py`).
 - [x] Example 5: draw pixels, lines, and outlined and filled rectangles (`examples/05_display_shapes.py`).
 
+## Additional requested work
+
+- [ ] Review and rename the GitHub repository and Python import/package name; choose a concise name that follows common Python package naming conventions, then update repository links and documentation.
+- [x] Extend `deploy.py` to upload a complete local directory tree, including resources such as a directory of photos, while preserving its directory structure on the badge.
+- [x] Add a digital picture-frame example that cycles through image files in a directory.
+- [ ] Review the archived Tetris, Etch-a-Sketch, and Snake programs in `old/` to identify required capabilities; update `pybadge.py` and its backends where needed, then add maintained examples for each game.
+- [ ] Create a `boot.py`-style program selector that lets a user choose which installed program to run.
+- [ ] Investigate whether V4.1.1 and its supported MicroPython firmware can accept input from a USB keyboard; if supported, create a terminal emulator that uses the keyboard.
+- [x] Add a README tutorial explaining how to build a program, detect pressed buttons, control the board lights, and use the display.
+
 ## Deferred future work
 
 - [ ] Add Bluetooth Low Energy (BLE) support after the target MicroPython firmware's `bluetooth.BLE` and `gap_scan` behavior is verified on the badge.
 - [ ] Add SD-card support after SPI/SD mounting, filesystem behavior, and safe unmounting are verified with the target MicroPython firmware. V4.1.1 wiring is documented as GPIO37–40.
 - [ ] Validate `read_battery_voltage()` on physical hardware; V4.1.1 uses a 150 kΩ / 10 kΩ divider (nominal ×16), but ADC conversion needs calibration and the signal measures the selected `PWR_RAW` rail.
+- [ ] Add `connect_wifi()` and `disconnect_wifi()` helpers that inspect the current Wi-Fi connection state first and handle already-connected or already-disconnected states cleanly.
+- [ ] Add an HTTP GET helper to download or retrieve a URL. Check that Wi-Fi is connected before sending the request, and handle the available `requests`/`urequests` module and response cleanup clearly.
+- [ ] Add an HTTP POST helper to send data to a URL. Check that Wi-Fi is connected before sending the request, and handle the available `requests`/`urequests` module and response cleanup clearly.
 - [ ] Evaluate remaining API additions from the V4.1 examples: servo control, UART helpers, accelerometer events, and higher-level song playback.

@@ -5,6 +5,7 @@ Examples::
     python deploy.py --port COM3 --install-library examples/01_button_led.py
     python deploy.py --port COM3 examples/03_button_tone.py
     python deploy.py --port COM3 --asset byui-cse_badge.bmp examples/04_display_logo.py
+    python deploy.py --port COM3 --directory photos
 """
 
 import argparse
@@ -16,7 +17,9 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parent
 
 
-def build_command(port, install_library=False, program=None, assets=()):
+def build_command(
+    port, install_library=False, program=None, assets=(), directories=()
+):
     """Build the mpremote command that copies the requested files."""
     operations = []
     if install_library:
@@ -45,6 +48,15 @@ def build_command(port, install_library=False, program=None, assets=()):
             ":",
         ])
 
+    if directories:
+        operations.append([
+            "fs",
+            "cp",
+            "-r",
+            *[str(directory) for directory in directories],
+            ":",
+        ])
+
     command = [sys.executable, "-m", "mpremote", "connect", port]
     for index, operation in enumerate(operations):
         if index:
@@ -61,9 +73,26 @@ def _existing_file(parser, path, description):
     return resolved
 
 
+def _existing_directory(parser, path):
+    """Resolve a local directory path or report a useful CLI error."""
+    resolved = path.expanduser().resolve()
+    if not resolved.is_dir():
+        parser.error("directory does not exist or is not a directory: {}".format(path))
+    return resolved
+
+
 def main():
     """Parse deployment options and run mpremote."""
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description="Copy pybadge software and user files to an eBadge.",
+        epilog=(
+            "Examples:\n"
+            "  python deploy.py --port COM3 --install-library "
+            "examples/01_button_led.py\n"
+            "  python deploy.py --port COM3 --directory photos"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument(
         "program",
         nargs="?",
@@ -88,10 +117,23 @@ def main():
         metavar="FILE",
         help="also copy a resource file to the badge root; repeat as needed",
     )
+    parser.add_argument(
+        "--directory",
+        action="append",
+        default=[],
+        type=Path,
+        metavar="DIR",
+        help="recursively copy a directory to the badge root; repeat as needed",
+    )
     args = parser.parse_args()
 
-    if not args.install_library and args.program is None and not args.asset:
-        parser.error("provide a program, an asset, or --install-library")
+    if (
+        not args.install_library
+        and args.program is None
+        and not args.asset
+        and not args.directory
+    ):
+        parser.error("provide a program, asset, directory, or --install-library")
 
     program = None
     if args.program is not None:
@@ -99,6 +141,10 @@ def main():
     assets = [
         _existing_file(parser, asset, "asset")
         for asset in args.asset
+    ]
+    directories = [
+        _existing_directory(parser, directory)
+        for directory in args.directory
     ]
 
     if args.install_library:
@@ -111,6 +157,7 @@ def main():
         install_library=args.install_library,
         program=program,
         assets=assets,
+        directories=directories,
     )
     try:
         result = subprocess.run(command, check=False)

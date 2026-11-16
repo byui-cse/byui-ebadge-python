@@ -54,6 +54,14 @@ The software targets MicroPython on the ESP32-S3 eBadge. Keep the public interfa
 - When changing an API, update its docstring and the project README or relevant specification so they describe the same behavior.
 - Review new project code for MicroPython compatibility, clear failure behavior, and unintended interaction with board peripherals.
 
+## Host-side script tests
+
+- Add `pytest` tests for every host-side utility script in the repository, including deployment and image-preparation tools such as `deploy.py` and `resize_image.py`.
+- Keep each script's core behavior in importable functions and keep command-line parsing and process startup behind a `main()` function so tests can exercise behavior without launching the script as a subprocess.
+- Cover successful operations, invalid inputs, and relevant path or command construction behavior. For `deploy.py`, mock subprocess execution and verify the `mpremote` arguments for library, program, asset, and directory uploads.
+- Tests must not require a physical badge, serial port, network access, terminal UI, or display. Mock external processes and hardware interfaces where needed.
+- Hardware test runners and interactive examples are manual procedures; host-side unit tests may check their importability and setup-independent logic, but must not invoke their hardware actions or wait for user input.
+
 ## User program organization
 
 - Keep the shared library and backend implementation separate from user programs. Place adaptable programs in `examples/` or a clearly named work directory; normal use should not require changing library internals.

@@ -230,6 +230,14 @@ The programs in [`examples/`](examples/) demonstrate the intended API:
 5. Draw pixels, lines, and outlined and filled rectangles.
 6. Cycle through prepared photos in a directory.
 7. Play Snake with the directional buttons.
+8. Draw with the directional buttons in Etch-a-Sketch.
+9. Play Tetris with the directional buttons.
+10. Choose and launch installed programs with `program_selector.py`.
+
+Snake and Tetris use the D-pad; the Etch-a-Sketch example uses the D-pad to
+draw, A to change color, B to toggle the eraser, and A+B to clear the canvas.
+Tetris uses left/right to move, up to rotate, down to speed up the drop, A to
+pause, and B to start a new game.
 
 These programs use `pybadge.py`. Some physical hardware behavior still needs
 validation; see [TODO.md](TODO.md) for remaining work and hardware limitations.
@@ -278,7 +286,7 @@ Run the program in the computer simulator using the [simulator instructions](#ru
 To run it on the badge, connect the board and deploy the library and program:
 
 ```sh
-python deploy.py --port <PORT> --install-library my_program.py
+python deploy.py --install-library my_program.py
 ```
 
 `is_pressed()` returns `True` while the named button is held. The display
@@ -304,7 +312,7 @@ tree into a separate sibling folder, then deploy that folder:
 
 ```sh
 python resize_image.py photos/
-python deploy.py --port <PORT> --directory photos_badge/
+python deploy.py --directory photos_badge/
 ```
 
 The converter writes BMP files under `photos_badge/`, preserving subfolders
@@ -315,7 +323,7 @@ For a repeating slideshow, deploy the photo folder with the picture-frame
 example and copy the example as the program:
 
 ```sh
-python deploy.py --port <PORT> --install-library --directory photos_badge/ examples/06_picture_frame.py
+python deploy.py --install-library --directory photos_badge/ examples/06_picture_frame.py
 ```
 
 The frame cycles through BMP files directly inside `photos_badge/`, showing
@@ -327,23 +335,27 @@ included in this simple slideshow.
 `mpremote` is a Python package with a command-line interface. Install it with
 the host tools above, then use `deploy.py` to upload programs and files. On
 first deployment, include `--install-library` to copy `pybadge.py` and the
-backend directory. Replace `<PORT>` with the badge's serial port:
+backend directory:
 
 ```sh
-python deploy.py --port <PORT> --install-library examples/01_button_led.py
+python deploy.py --install-library examples/01_button_led.py
 ```
+
+`deploy.py` defaults to mpremote's automatic port selection. Omit `--port`
+when the badge is detected automatically; add `--port <PORT>` when you need to
+select a specific badge.
 
 The script copies the selected program to `/main.py`. After the library is
 installed, later programs do not need the library flag:
 
 ```sh
-python deploy.py --port <PORT> examples/05_display_shapes.py
+python deploy.py examples/05_display_shapes.py
 ```
 
 To deploy the logo example and its prepared image in one command:
 
 ```sh
-python deploy.py --port <PORT> --install-library --asset byui-cse_badge.bmp examples/04_display_logo.py
+python deploy.py --install-library --asset byui-cse_badge.bmp examples/04_display_logo.py
 ```
 
 Use `--asset FILE` to copy another resource to the badge's root directory;
@@ -351,7 +363,7 @@ repeat the option to copy more than one asset. The same flag can upload a
 manual test runner without replacing `/main.py`:
 
 ```sh
-python deploy.py --port <PORT> --asset hardware_tests/run_pybadge_checks.py
+python deploy.py --asset hardware_tests/run_pybadge_checks.py
 ```
 
 Use `--directory DIR` to recursively copy a complete folder to the badge,
@@ -359,11 +371,27 @@ preserving its name and nested paths. For example, this uploads local `photos/`
 to `/photos/`:
 
 ```sh
-python deploy.py --port <PORT> --directory photos
+python deploy.py --directory photos
 ```
 
 You can combine `--directory` with `--install-library`, a program, and asset
 options in one deployment command.
+
+To use the button-controlled program selector, deploy it as the badge's
+`main.py` and copy the programs you want to run as assets. Up/Down selects a
+program and A launches it. Programs should return normally or handle
+Ctrl-C/KeyboardInterrupt to return to the menu.
+
+```sh
+python deploy.py --port <PORT> --install-library \
+  --asset examples/01_button_led.py \
+  --asset examples/05_display_shapes.py \
+  program_selector.py
+```
+
+Add more `--asset` options to install more programs. The selector scans `.py`
+files in the badge root and skips `main.py`, `boot.py`, `pybadge.py`, and the
+selector itself.
 
 The deploy helper starts `mpremote` through the same Python interpreter used
 to run the script. The package must be installed in that environment. The
@@ -391,8 +419,8 @@ the guided runner as an asset, and open the interactive REPL:
 
 ```sh
 git rev-parse --short HEAD
-python deploy.py --port <PORT> --asset hardware_tests/run_pybadge_checks.py
-python -m mpremote connect <PORT> repl
+python deploy.py --asset hardware_tests/run_pybadge_checks.py
+python -m mpremote repl
 ```
 
 The runner uses keyboard prompts, so launch it from the interactive REPL, not
@@ -441,8 +469,8 @@ investigate failures before treating the corresponding feature as validated.
 To check `HardwareBackend` directly, upload and import its runner:
 
 ```sh
-python deploy.py --port <PORT> --asset hardware_tests/run_hardware_backend_checks.py
-python -m mpremote connect <PORT> repl
+python deploy.py --asset hardware_tests/run_hardware_backend_checks.py
+python -m mpremote repl
 ```
 
 At the MicroPython prompt, enter `import run_hardware_backend_checks` followed

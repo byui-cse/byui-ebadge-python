@@ -58,10 +58,14 @@
 
 - [ ] Review and rename the GitHub repository and Python import/package name; choose a concise name that follows common Python package naming conventions, then update repository links and documentation.
 - [x] Extend `deploy.py` to upload a complete local directory tree, including resources such as a directory of photos, while preserving its directory structure on the badge.
+- [x] Clean up README deployment commands to use mpremote port auto-detection by default and explain that `--port <PORT>` is optional when automatic selection works.
 - [x] Add a digital picture-frame example that cycles through image files in a directory.
-- [ ] Review the archived Tetris, Etch-a-Sketch, and Snake programs in `old/` to identify required capabilities; update `pybadge.py` and its backends where needed, then add maintained examples for each game.
-- [ ] Create a `boot.py`-style program selector that lets a user choose which installed program to run.
-- [ ] Investigate whether V4.1.1 and its supported MicroPython firmware can accept input from a USB keyboard; if supported, create a terminal emulator that uses the keyboard.
+- [x] Review the archived Tetris, Etch-a-Sketch, and Snake programs in `old/` to identify required capabilities; the existing public button, display, tone, LED, and pause helpers were sufficient, so no backend changes were needed.
+  - [x] Add Snake using the D-pad and current public drawing helpers (`examples/07_snake.py`).
+  - [x] Add an Etch-a-Sketch variant using the D-pad and current public drawing helpers (`examples/08_etch_sketch.py`).
+  - [x] Port Tetris using the D-pad and current public drawing helpers (`examples/09_tetris.py`).
+- [x] Create a program selector that lets a user choose which installed program to run (`program_selector.py`). Deploy it as `main.py`; it returns to the menu after a selected program finishes or is interrupted.
+- [x] Investigate USB keyboard support: V4.1.1 has native USB-host hardware, but the archived board note says keyboard host mode is Arduino-only and the supplied MicroPython 1.29.0 generic ESP32-S3 firmware has no USB-host HID API. A keyboard terminal would need custom firmware or a native host driver; it is not supported by the current Python target. See [`hardware-v4.1.1.md`](specifications/hardware-v4.1.1.md).
 - [x] Add a README tutorial explaining how to build a program, detect pressed buttons, control the board lights, and use the display.
 
 ## Deferred future work

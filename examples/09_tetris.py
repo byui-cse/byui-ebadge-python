@@ -38,16 +38,20 @@ SHAPES = (
 
 def rotate_shape(shape):
     """Return ``shape`` rotated 90 degrees clockwise."""
+    uses_four_cell_box = any(shape[3]) or any(row[3] for row in shape)
+    box_size = 4 if uses_four_cell_box else 3
     rotated = [[0] * 4 for _ in range(4)]
-    for y in range(4):
-        for x in range(4):
-            rotated[x][3 - y] = shape[y][x]
+    for y in range(box_size):
+        for x in range(box_size):
+            rotated[x][box_size - 1 - y] = shape[y][x]
     return tuple(tuple(row) for row in rotated)
 
 
 def get_shape(piece):
     """Return the piece matrix after its requested number of rotations."""
     shape = SHAPES[piece["kind"]]
+    if piece["kind"] == 1:
+        return shape
     for _ in range(piece["rotation"]):
         shape = rotate_shape(shape)
     return shape

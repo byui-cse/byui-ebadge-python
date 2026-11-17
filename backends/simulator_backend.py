@@ -296,6 +296,31 @@ class SimulatorBackend(TestBackend):
             "Wi-Fi scanning is not modeled by the terminal simulator."
         )
 
+    def is_wifi_connected(self):
+        raise UnsupportedFeatureError(
+            "Wi-Fi connections are not modeled by the terminal simulator."
+        )
+
+    def connect_wifi(self, ssid, password, timeout_ms):
+        raise UnsupportedFeatureError(
+            "Wi-Fi connections are not modeled by the terminal simulator."
+        )
+
+    def disconnect_wifi(self):
+        raise UnsupportedFeatureError(
+            "Wi-Fi connections are not modeled by the terminal simulator."
+        )
+
+    def download_url(self, url, filename, headers):
+        raise UnsupportedFeatureError(
+            "HTTP requests are not modeled by the terminal simulator."
+        )
+
+    def post_url(self, url, data, json, headers):
+        raise UnsupportedFeatureError(
+            "HTTP requests are not modeled by the terminal simulator."
+        )
+
     def read_accelerometer(self):
         raise UnsupportedFeatureError(
             "Accelerometer readings are not modeled by the terminal simulator."

@@ -14,6 +14,10 @@ class TestBackend:
         self.display_color = "black"
         self.display_operations = []
         self.wifi_results = []
+        self.wifi_connected = False
+        self.http_get_response = b""
+        self.http_post_response = b""
+        self.http_requests = []
         self.digital_inputs = {}
         self.analog_inputs = {}
         self.pin_modes = {}
@@ -30,6 +34,7 @@ class TestBackend:
         self.rgb_led = "off"
         self.led_strip = ["off"] * 24
         self.active_tone = None
+        self.wifi_connected = False
         self.pwm_outputs.clear()
 
     def is_pressed(self, button):
@@ -87,6 +92,32 @@ class TestBackend:
             (network.get("ssid", ""), network.get("signal_dbm", -100))
             for network in self.wifi_results
         ]
+
+    def is_wifi_connected(self):
+        return self.wifi_connected
+
+    def connect_wifi(self, ssid, password, timeout_ms):
+        self.wifi_connected = True
+        return True
+
+    def disconnect_wifi(self):
+        self.wifi_connected = False
+
+    def download_url(self, url, filename, headers):
+        if not self.wifi_connected:
+            raise RuntimeError("connect to Wi-Fi before making an HTTP request")
+        self.http_requests.append(("GET", url, headers))
+        if filename is None:
+            return self.http_get_response
+        with open(filename, "wb") as output:
+            output.write(self.http_get_response)
+        return filename
+
+    def post_url(self, url, data, json, headers):
+        if not self.wifi_connected:
+            raise RuntimeError("connect to Wi-Fi before making an HTTP request")
+        self.http_requests.append(("POST", url, data, json, headers))
+        return self.http_post_response
 
     def pause(self, milliseconds):
         return None

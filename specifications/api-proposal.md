@@ -41,6 +41,8 @@ separate simulated screen area.
 | `draw_rectangle(x, y, width, height, color=WHITE, filled=False)` | Draw an outline or filled rectangle. |
 | `display_image(path, x=0, y=0)` | Display an image resource in the format supported by the active backend. For hardware, use a prepared display asset generated from a PNG/JPG source. |
 | `scan_wifi(include_details=False)` | **Agreed:** by default, return nearby networks as `(ssid, signal_dbm)` pairs. When `include_details=True`, return richer network records. Candidate extra fields are channel and security/authentication; exact record shape remains open. |
+| `is_wifi_connected()` / `connect_wifi(ssid, password, timeout_ms=15000)` / `disconnect_wifi()` | **Implemented extension:** report connection state, connect with a timeout and boolean result, or safely disconnect an inactive/already-disconnected station interface. |
+| `download_url(url, filename=None, headers=None)` / `post_url(url, data=None, json=None, headers=None)` | **Implemented extension:** require Wi-Fi to be connected before HTTP requests, close responses, reject non-2xx status codes, and support optional `urequests` or `requests`. GET returns bytes or saves them to a file; POST returns response bytes. |
 | `pause(milliseconds)` | Pause for the requested number of milliseconds. |
 | `read_accelerometer()` | **Agreed for first API:** return `(x, y, z)` acceleration readings in g, or `None` if the sensor cannot be read. |
 | `read_battery_voltage()` | **Agreed for first API:** return battery voltage in volts, not an estimated charge percentage. |

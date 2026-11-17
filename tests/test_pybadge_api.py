@@ -116,6 +116,54 @@ def test_wifi_results_are_simple_by_default_and_detailed_on_request(badge_backen
     ]
 
 
+def test_wifi_connection_state_can_be_managed(badge_backend):
+    assert pybadge.is_wifi_connected() is False
+    assert pybadge.connect_wifi("ExampleNet", "secret") is True
+    assert pybadge.is_wifi_connected() is True
+
+    pybadge.disconnect_wifi()
+    assert pybadge.is_wifi_connected() is False
+
+
+def test_http_get_requires_wifi_and_can_save_response(badge_backend, tmp_path):
+    with pytest.raises(RuntimeError, match="connect to Wi-Fi"):
+        pybadge.download_url("https://example.com/photo.bmp")
+
+    badge_backend.wifi_connected = True
+    badge_backend.http_get_response = b"image bytes"
+    assert pybadge.download_url("https://example.com/photo.bmp") == b"image bytes"
+
+    output = tmp_path / "photo.bmp"
+    assert pybadge.download_url(
+        "https://example.com/photo.bmp", str(output)
+    ) == str(output)
+    assert output.read_bytes() == b"image bytes"
+    assert badge_backend.http_requests[0] == (
+        "GET",
+        "https://example.com/photo.bmp",
+        None,
+    )
+
+
+def test_http_post_requires_wifi_and_records_json_request(badge_backend):
+    with pytest.raises(RuntimeError, match="connect to Wi-Fi"):
+        pybadge.post_url("https://example.com/api", json={"value": 3})
+
+    badge_backend.wifi_connected = True
+    badge_backend.http_post_response = b"created"
+    assert pybadge.post_url(
+        "https://example.com/api", json={"value": 3}
+    ) == b"created"
+    assert badge_backend.http_requests == [
+        ("POST", "https://example.com/api", None, {"value": 3}, None)
+    ]
+
+
+def test_http_post_rejects_both_data_and_json(badge_backend):
+    with pytest.raises(ValueError, match="either data or json"):
+        pybadge.post_url("https://example.com/api", data="x", json={"x": 1})
+
+
 def test_accelerometer_returns_g_values_and_can_be_unavailable(badge_backend):
     badge_backend.set_accelerometer(0.15, -0.25, 0.97)
     assert pybadge.read_accelerometer() == (0.15, -0.25, 0.97)

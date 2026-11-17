@@ -288,6 +288,63 @@ def scan_wifi(include_details=False):
     return _require_backend().scan_wifi(include_details)
 
 
+def is_wifi_connected():
+    """Return whether the eBadge is connected to a Wi-Fi access point."""
+    return bool(_require_backend().is_wifi_connected())
+
+
+def connect_wifi(ssid, password, timeout_ms=15000):
+    """Connect to Wi-Fi, waiting up to ``timeout_ms`` and returning success."""
+    if not isinstance(ssid, str) or not ssid:
+        raise ValueError("ssid must be a non-empty string")
+    if not isinstance(password, str):
+        raise TypeError("password must be a string")
+    if isinstance(timeout_ms, bool) or not isinstance(timeout_ms, int):
+        raise TypeError("timeout_ms must be an integer")
+    if timeout_ms < 0:
+        raise ValueError("timeout_ms must be a non-negative integer")
+    return bool(_require_backend().connect_wifi(ssid, password, timeout_ms))
+
+
+def disconnect_wifi():
+    """Disconnect from Wi-Fi and turn off the station interface."""
+    _require_backend().disconnect_wifi()
+
+
+def download_url(url, filename=None, headers=None):
+    """GET a URL and return its response bytes or save them to ``filename``.
+
+    The hardware backend requires an active Wi-Fi connection and the optional
+    MicroPython ``urequests`` or ``requests`` module. Always uses ``close()``
+    on the response, including when the server returns an error status.
+    """
+    if not isinstance(url, str) or not url:
+        raise ValueError("url must be a non-empty string")
+    if filename is not None and not isinstance(filename, str):
+        raise TypeError("filename must be a string or None")
+    if headers is not None and not isinstance(headers, dict):
+        raise TypeError("headers must be a dictionary or None")
+    return _require_backend().download_url(url, filename, headers)
+
+
+def post_url(url, data=None, json=None, headers=None):
+    """POST data to a URL and return the response bytes.
+
+    Pass either ``data`` (bytes or text) or a JSON-compatible value through
+    ``json``. The hardware backend requires an active Wi-Fi connection and
+    the optional MicroPython ``urequests`` or ``requests`` module.
+    """
+    if not isinstance(url, str) or not url:
+        raise ValueError("url must be a non-empty string")
+    if data is not None and json is not None:
+        raise ValueError("provide either data or json, not both")
+    if data is not None and not isinstance(data, (str, bytes)):
+        raise TypeError("data must be text, bytes, or None")
+    if headers is not None and not isinstance(headers, dict):
+        raise TypeError("headers must be a dictionary or None")
+    return _require_backend().post_url(url, data, json, headers)
+
+
 def pause(milliseconds):
     """Pause for the requested number of milliseconds."""
     if milliseconds < 0:

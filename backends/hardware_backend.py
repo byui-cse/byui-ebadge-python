@@ -327,6 +327,109 @@ class HardwareBackend:
                 results.append((ssid, rssi))
         return results
 
+    def _wlan(self):
+        """Return the station interface or raise a clear firmware error."""
+        try:
+            import network
+        except ImportError:
+            raise RuntimeError("Wi-Fi requires the MicroPython network module")
+        return network.WLAN(network.STA_IF)
+
+    def is_wifi_connected(self):
+        """Return whether the station interface has an active connection."""
+        return self._wlan().isconnected()
+
+    def connect_wifi(self, ssid, password, timeout_ms):
+        """Connect to an access point, respecting the requested timeout."""
+        wlan = self._wlan()
+        if wlan.isconnected():
+            return True
+        wlan.active(True)
+        wlan.connect(ssid, password)
+        start = self._utime.ticks_ms()
+        while not wlan.isconnected():
+            if self._utime.ticks_diff(self._utime.ticks_ms(), start) >= timeout_ms:
+                return False
+            self._utime.sleep_ms(100)
+        return True
+
+    def disconnect_wifi(self):
+        """Disconnect and disable the station interface when it is active."""
+        wlan = self._wlan()
+        if wlan.active():
+            if wlan.isconnected():
+                wlan.disconnect()
+            wlan.active(False)
+
+    def _requests_module(self):
+        """Import the optional MicroPython HTTP client."""
+        try:
+            import urequests as requests
+        except ImportError:
+            try:
+                import requests
+            except ImportError:
+                raise RuntimeError(
+                    "HTTP requests require the optional urequests or requests "
+                    "module on the badge."
+                )
+        return requests
+
+    def _require_http_wifi(self):
+        if not self.is_wifi_connected():
+            raise RuntimeError("connect to Wi-Fi before making an HTTP request")
+
+    @staticmethod
+    def _response_body(response):
+        """Return response content after validating its HTTP status."""
+        status = getattr(response, "status_code", None)
+        if status is not None and not 200 <= status < 300:
+            raise OSError("HTTP request failed with status {}".format(status))
+        return response.content
+
+    @staticmethod
+    def _close_response(response):
+        close = getattr(response, "close", None)
+        if close is not None:
+            close()
+
+    def download_url(self, url, filename, headers):
+        """GET a URL and return response bytes or save them to a file."""
+        self._require_http_wifi()
+        response = self._requests_module().get(url, headers=headers)
+        try:
+            content = self._response_body(response)
+            if filename is None:
+                return content
+            with open(filename, "wb") as output:
+                output.write(content)
+            return filename
+        finally:
+            self._close_response(response)
+
+    def post_url(self, url, data, json, headers):
+        """POST text, bytes, or JSON to a URL and return response bytes."""
+        self._require_http_wifi()
+        request_headers = dict(headers or {})
+        if json is not None:
+            import json as json_module
+
+            data = json_module.dumps(json)
+            has_content_type = any(
+                name.lower() == "content-type" for name in request_headers
+            )
+            if not has_content_type:
+                request_headers["Content-Type"] = "application/json"
+        response = self._requests_module().post(
+            url,
+            data=data,
+            headers=request_headers,
+        )
+        try:
+            return self._response_body(response)
+        finally:
+            self._close_response(response)
+
     def pause(self, milliseconds):
         """Pause for the requested number of milliseconds."""
         self._utime.sleep_ms(milliseconds)

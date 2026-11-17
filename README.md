@@ -38,10 +38,17 @@ directions are available in the simulator and test backend, while hardware
 support remains disabled until its direction and center behavior are
 calibrated. BLE and SD-card support are deferred future work.
 
+Hardware mode also provides `connect_wifi()`, `disconnect_wifi()`,
+`is_wifi_connected()`, `download_url()`, and `post_url()`. HTTP helpers require
+an active Wi-Fi connection and an optional `urequests` or `requests` module on
+the badge. GET returns response bytes or saves them to a filename; POST returns
+response bytes. Responses are closed after use. The GET helper reads the full
+response into memory, so use it for files that fit the badge's available RAM.
+
 The terminal simulator models buttons, joystick positions, the screen, LEDs,
-and buzzer activity. It does not model Wi-Fi scanning, accelerometer or
-battery readings, external GPIO, voltage measurement, or PWM output. It is not
-a full electrical simulation.
+and buzzer activity. It does not model Wi-Fi scanning or connections, HTTP,
+accelerometer or battery readings, external GPIO, voltage measurement, or PWM
+output. It is not a full electrical simulation.
 
 ## Board photographs
 

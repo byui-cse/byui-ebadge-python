@@ -73,7 +73,7 @@
 - [ ] Add Bluetooth Low Energy (BLE) support after the target MicroPython firmware's `bluetooth.BLE` and `gap_scan` behavior is verified on the badge.
 - [ ] Add SD-card support after SPI/SD mounting, filesystem behavior, and safe unmounting are verified with the target MicroPython firmware. V4.1.1 wiring is documented as GPIO37–40.
 - [ ] Validate `read_battery_voltage()` on physical hardware; V4.1.1 uses a 150 kΩ / 10 kΩ divider (nominal ×16), but ADC conversion needs calibration and the signal measures the selected `PWR_RAW` rail.
-- [ ] Add `connect_wifi()` and `disconnect_wifi()` helpers that inspect the current Wi-Fi connection state first and handle already-connected or already-disconnected states cleanly.
-- [ ] Add an HTTP GET helper to download or retrieve a URL. Check that Wi-Fi is connected before sending the request, and handle the available `requests`/`urequests` module and response cleanup clearly.
-- [ ] Add an HTTP POST helper to send data to a URL. Check that Wi-Fi is connected before sending the request, and handle the available `requests`/`urequests` module and response cleanup clearly.
+- [x] Add `connect_wifi()`, `disconnect_wifi()`, and `is_wifi_connected()` helpers that handle already-connected or already-disconnected states cleanly.
+- [x] Add `download_url()` for HTTP GET. It checks Wi-Fi first, supports optional `urequests`/`requests`, closes responses, and can return bytes or save them to a file.
+- [x] Add `post_url()` for HTTP POST with text, bytes, or JSON. It checks Wi-Fi first, supports optional `urequests`/`requests`, and closes responses.
 - [ ] Evaluate remaining API additions from the V4.1 examples: servo control, UART helpers, accelerometer events, and higher-level song playback.

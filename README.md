@@ -204,12 +204,10 @@ It cannot validate the physical sensors or ADC calibration.
 
 ## Run the terminal simulator
 
-Install Textual. Pillow is optional and enables the permanent logo artwork;
-the simulator shows a text fallback when Pillow or image rendering is
-unavailable:
+Install Textual:
 
 ```sh
-python -m pip install textual pillow
+python -m pip install textual
 ```
 
 From the repository root, run a program that calls `pybadge.initialize()`.
@@ -217,6 +215,12 @@ For example, on macOS or Linux:
 
 ```sh
 PYTHONPATH=. python examples/01_button_led.py
+```
+
+To open the simulator with sample screen and LED output, run:
+
+```sh
+PYTHONPATH=. python3 examples/00_simulator_demo.py
 ```
 
 In PowerShell, use `$env:PYTHONPATH = "."` before running the same Python

@@ -1,7 +1,5 @@
 """Tests for the beginner-facing API using the headless backend."""
 
-import sys
-
 import pytest
 
 import pybadge
@@ -10,7 +8,7 @@ import pybadge
 def test_fixture_selects_headless_test_mode(badge_backend):
     assert pybadge.current_mode() == "test"
     assert badge_backend.initialized
-    assert "backends.simulator_backend" not in sys.modules
+    assert type(badge_backend).__module__ == "backends.test_backend"
 
 
 def test_button_state_can_be_controlled(badge_backend):

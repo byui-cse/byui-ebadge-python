@@ -9,25 +9,36 @@ import pybadge
 
 def main():
     pybadge.initialize()
-    pybadge.display_clear()
-    pybadge.display_text("Scanning for Wi-Fi...", x=8, y=8)
+    unavailable_message = None
+    try:
+        pybadge.display_clear()
+        pybadge.display_text("Scanning for Wi-Fi...", x=8, y=8)
 
-    networks = pybadge.scan_wifi()
-    pybadge.display_clear()
-    pybadge.display_text("Nearby Wi-Fi networks", x=8, y=8)
+        networks = pybadge.scan_wifi()
+        pybadge.display_clear()
+        pybadge.display_text("Nearby Wi-Fi networks", x=8, y=8)
 
-    if not networks:
-        pybadge.display_text("No networks found", x=8, y=32)
-        print("No Wi-Fi networks found.")
-        return
+        if not networks:
+            pybadge.display_text("No networks found", x=8, y=32)
+            print("No Wi-Fi networks found.")
+            return
 
-    for index, (name, signal_dbm) in enumerate(networks[:9]):
-        line = "{} ({:+} dBm)".format(name or "(hidden)", signal_dbm)
-        pybadge.display_text(line, x=8, y=32 + index * 20)
-        print(line)
+        for index, (name, signal_dbm) in enumerate(networks[:9]):
+            line = "{} ({:+} dBm)".format(name or "(hidden)", signal_dbm)
+            pybadge.display_text(line, x=8, y=32 + index * 20)
+            print(line)
 
-    if len(networks) > 9:
-        pybadge.display_text("+{} more".format(len(networks) - 9), x=8, y=212)
+        if len(networks) > 9:
+            pybadge.display_text("+{} more".format(len(networks) - 9), x=8, y=212)
+    except pybadge.UnsupportedFeatureError as error:
+        unavailable_message = "Wi-Fi scan unavailable: {}".format(error)
+        pybadge.display_clear()
+        pybadge.display_text("Wi-Fi scan unavailable", x=8, y=8)
+    finally:
+        pybadge.shutdown()
+
+    if unavailable_message is not None:
+        print(unavailable_message)
 
 
 if __name__ == "__main__":

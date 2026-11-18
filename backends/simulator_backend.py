@@ -1,6 +1,7 @@
 """Focused terminal simulator for buttons, display, LEDs, and buzzer."""
 
-import os
+import atexit
+import signal
 import threading
 import time
 
@@ -15,6 +16,10 @@ class SimulatorBackend(TestBackend):
         super().__init__()
         self._app = None
         self._app_thread = None
+        self._app_started = threading.Event()
+        self._app_stopped = threading.Event()
+        self._app_error = None
+        self._atexit_registered = False
         self._tone_deadline = None
 
     def initialize(self):
@@ -36,14 +41,18 @@ class SimulatorBackend(TestBackend):
 
             CSS = """
             Screen { align: center middle; }
-            #board { width: 94; height: 35; padding: 1 2; background: #07539b; border: round #56a3e8; }
-            #brand { height: 7; content-align: center middle; color: white; }
-            #controls { height: 15; align: center middle; }
-            #buttons { width: 26; height: 14; align: center middle; }
-            #directions { height: 9; align: center middle; }
-            #actions { height: 3; align: center middle; }
-            #screen { width: 34; height: 13; padding: 1; margin: 0 1; border: heavy #d1d5db; background: black; color: white; overflow: hidden; }
-            #joystick { width: 23; height: 13; align: center middle; }
+            #board { width: 94; height: 32; padding: 0 2; background: #07539b; border: round #56a3e8; }
+            #controls { height: 22; align: center middle; }
+            #left-controls { width: 29; height: 22; align: center middle; }
+            #directions { height: 12; align: center middle; }
+            .direction-row { height: 3; align: center middle; }
+            #actions { width: 18; height: 6; }
+            #action-a-row { height: 3; align: center middle; }
+            #action-b-row { height: 3; align: left middle; }
+            #brand { width: 8; height: 6; margin: 0 1; content-align: center middle; text-align: center; color: white; text-style: bold; }
+            #screen { width: 34; height: 13; padding: 1; margin: 3 1 0 1; border: heavy #d1d5db; background: black; color: white; overflow: hidden; }
+            #joystick { width: 27; height: 11; align: center middle; }
+            #action-area { width: 15; height: 22; align: right bottom; }
             .joystick-row { height: 3; align: center middle; }
             #stick-label { height: 1; content-align: center middle; color: #dbeafe; }
             .pad-button { min-width: 6; height: 3; margin: 0 1; }
@@ -58,33 +67,38 @@ class SimulatorBackend(TestBackend):
 
             def compose(self) -> ComposeResult:
                 with Vertical(id="board"):
-                    yield Static(backend._logo_art(), id="brand")
                     with Horizontal(id="controls"):
-                        with Vertical(id="buttons"):
+                        with Vertical(id="left-controls"):
+                            with Vertical(id="joystick"):
+                                yield Static("Joystick", id="stick-label")
+                                with Horizontal(classes="joystick-row"):
+                                    yield Button("NW", id="stick-nw", classes="stick-button")
+                                    yield Button("N", id="stick-n", classes="stick-button")
+                                    yield Button("NE", id="stick-ne", classes="stick-button")
+                                with Horizontal(classes="joystick-row"):
+                                    yield Button("W", id="stick-w", classes="stick-button")
+                                    yield Button("Center", id="stick-center", classes="stick-button")
+                                    yield Button("E", id="stick-e", classes="stick-button")
+                                with Horizontal(classes="joystick-row"):
+                                    yield Button("SW", id="stick-sw", classes="stick-button")
+                                    yield Button("S", id="stick-s", classes="stick-button")
+                                    yield Button("SE", id="stick-se", classes="stick-button")
                             with Vertical(id="directions"):
-                                yield Button("Up", id="button-up", classes="pad-button")
-                                with Horizontal():
+                                with Horizontal(classes="direction-row"):
+                                    yield Button("Up", id="button-up", classes="pad-button")
+                                with Horizontal(classes="direction-row"):
                                     yield Button("Left", id="button-left", classes="pad-button")
-                                    yield Button("Down", id="button-down", classes="pad-button")
                                     yield Button("Right", id="button-right", classes="pad-button")
-                            with Horizontal(id="actions"):
-                                yield Button("A", id="button-a", classes="pad-button success")
-                                yield Button("B", id="button-b", classes="pad-button warning")
+                                with Horizontal(classes="direction-row"):
+                                    yield Button("Down", id="button-down", classes="pad-button")
+                        yield Static("BYU\n────\nIDAHO", id="brand")
                         yield Static(backend._screen_text(), id="screen")
-                        with Vertical(id="joystick"):
-                            yield Static("Joystick", id="stick-label")
-                            with Horizontal(classes="joystick-row"):
-                                yield Button("NW", id="stick-nw", classes="stick-button")
-                                yield Button("N", id="stick-n", classes="stick-button")
-                                yield Button("NE", id="stick-ne", classes="stick-button")
-                            with Horizontal(classes="joystick-row"):
-                                yield Button("W", id="stick-w", classes="stick-button")
-                                yield Button("Center", id="stick-center", classes="stick-button")
-                                yield Button("E", id="stick-e", classes="stick-button")
-                            with Horizontal(classes="joystick-row"):
-                                yield Button("SW", id="stick-sw", classes="stick-button")
-                                yield Button("S", id="stick-s", classes="stick-button")
-                                yield Button("SE", id="stick-se", classes="stick-button")
+                        with Vertical(id="action-area"):
+                            with Vertical(id="actions"):
+                                with Horizontal(id="action-a-row"):
+                                    yield Button("A", id="button-a", classes="pad-button success")
+                                with Horizontal(id="action-b-row"):
+                                    yield Button("B", id="button-b", classes="pad-button warning")
                     yield Static(backend._output_text(), id="outputs")
                     yield Static(
                         "Click controls · center the stick to reset · q closes the board",
@@ -122,6 +136,7 @@ class SimulatorBackend(TestBackend):
                 self.set_timer(0.18, lambda: backend.release_button(button))
 
             def on_mount(self) -> None:
+                backend._app_started.set()
                 self.set_interval(0.1, self.refresh_board)
 
             def refresh_board(self) -> None:
@@ -132,60 +147,80 @@ class SimulatorBackend(TestBackend):
 
         self._app = BadgeApp()
         self._app_thread = threading.Thread(
-            target=self._app.run,
+            target=self._run_app,
             name="pybadge-terminal-simulator",
             daemon=True,
         )
+        atexit.register(self.shutdown)
+        self._atexit_registered = True
         self._app_thread.start()
+        if not self._app_started.wait(timeout=5.0):
+            app_error = self._app_error
+            self.shutdown()
+            if app_error is not None:
+                raise RuntimeError("The terminal simulator could not start.") from app_error
+            raise RuntimeError("The terminal simulator did not finish starting.")
+
+    def _run_app(self):
+        """Run Textual in its UI thread without installing process signals.
+
+        Textual's Linux driver installs terminal signal handlers when it
+        starts. Python only permits signal handlers to be installed by the
+        main thread, while the synchronous pybadge API needs the UI to run
+        alongside the user's program. Skip signal registration requested by
+        the UI thread; signal calls from the main thread keep normal behavior.
+        """
+        original_signal = signal.signal
+        simulator_thread = threading.current_thread()
+
+        def thread_aware_signal(signal_number, handler):
+            if threading.current_thread() is simulator_thread:
+                return signal.SIG_DFL
+            return original_signal(signal_number, handler)
+
+        signal.signal = thread_aware_signal
+        try:
+            self._app.run()
+        except BaseException as error:
+            self._app_error = error
+        finally:
+            signal.signal = original_signal
+            self._app_stopped.set()
 
     def shutdown(self):
-        if self._app is not None:
+        app = self._app
+        app_thread = self._app_thread
+        if app is not None:
             try:
-                self._app.exit()
+                if (
+                    app_thread is not None
+                    and app_thread.is_alive()
+                    and threading.current_thread() is not app_thread
+                    and getattr(app, "is_running", False)
+                ):
+                    app.call_from_thread(app.exit)
+                else:
+                    app.exit()
             except Exception:
                 pass
+        if (
+            app_thread is not None
+            and app_thread.is_alive()
+            and threading.current_thread() is not app_thread
+        ):
+            app_thread.join(timeout=2.0)
         self._app = None
         self._app_thread = None
+        if self._atexit_registered:
+            atexit.unregister(self.shutdown)
+            self._atexit_registered = False
         super().shutdown()
         self._tone_deadline = None
-
-    def _logo_art(self):
-        """Render the CSE logo as permanent blue-board artwork in true color."""
-        try:
-            from PIL import Image
-            from rich.text import Text
-
-            logo_path = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)), "byui-cse.png"
-            )
-            with Image.open(logo_path) as image:
-                image = image.convert("RGBA")
-                image.thumbnail((28, 10))
-                width, height = image.size
-                pixels = image.load()
-                art = Text()
-                for y in range(0, height, 2):
-                    for x in range(width):
-                        top = _composite(pixels[x, y], (7, 83, 155))
-                        if y + 1 < height:
-                            bottom = _composite(pixels[x, y + 1], (7, 83, 155))
-                        else:
-                            bottom = (7, 83, 155)
-                        top_hex = "#%02x%02x%02x" % top
-                        bottom_hex = "#%02x%02x%02x" % bottom
-                        art.append("▀", style="{} on {}".format(top_hex, bottom_hex))
-                    art.append("\n")
-                return art
-        except Exception:
-            # The board label stays visible if terminal true-color art is not
-            # available, for example on a restricted terminal emulator.
-            return "BYU-IDAHO  ·  COMPUTER SCIENCE"
 
     def _screen_text(self):
         from rich.text import Text
 
         screen = Text()
-        screen.append("eBadge display 320 x 240\n", style="bold")
         if self.display_operations:
             for operation in self.display_operations[-5:]:
                 if operation[0] == "clear":
@@ -219,8 +254,6 @@ class SimulatorBackend(TestBackend):
                     )
                 elif operation[0] == "image":
                     screen.append("[image: {}]\n".format(operation[1]))
-        else:
-            screen.append("Your program's screen output")
         return screen
 
     def _output_text(self):
@@ -236,7 +269,10 @@ class SimulatorBackend(TestBackend):
 
         output = Text("RGB ")
         output.append("●", style="bold {}".format(_color_style(self.rgb_led)))
-        output.append(" {}   Ring ".format(self.rgb_led))
+        output.append(
+            " {}   Ring ".format(self.rgb_led),
+            style=_color_style(self.rgb_led) if self.rgb_led == "off" else "white",
+        )
         for color in self.led_strip:
             output.append("●", style="bold {}".format(_color_style(color)))
         if self.active_tone is None:
@@ -367,7 +403,7 @@ def _color_style(color):
         red, green, blue = color
         return "#%02x%02x%02x" % (red, green, blue)
     colors = {
-        "off": "#49627a",
+        "off": "#9e9e9e",
         "black": "#000000",
         "white": "#ffffff",
         "red": "#ff0000",
@@ -380,13 +416,3 @@ def _color_style(color):
         "purple": "#800080",
     }
     return colors.get(color, "#ffffff")
-
-
-def _composite(rgba, background):
-    red, green, blue, alpha = rgba
-    amount = alpha / 255.0
-    return (
-        int(red * amount + background[0] * (1.0 - amount)),
-        int(green * amount + background[1] * (1.0 - amount)),
-        int(blue * amount + background[2] * (1.0 - amount)),
-    )

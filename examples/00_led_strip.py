@@ -1,7 +1,7 @@
 """Open the computer simulator with a few sample outputs.
 
 Run from the repository root with:
-    PYTHONPATH=. python3 examples/00_simulator_demo.py
+    PYTHONPATH=. python3 examples/00_led_strip.py
 
 Click the controls to explore the simulated buttons and joystick. Press q to
 close the simulator, then Ctrl-C in the terminal to stop this program.

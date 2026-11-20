@@ -220,7 +220,7 @@ PYTHONPATH=. python examples/01_button_led.py
 To open the simulator with sample screen and LED output, run:
 
 ```sh
-PYTHONPATH=. python3 examples/00_simulator_demo.py
+PYTHONPATH=. python3 examples/00_led_strip.py
 ```
 
 In PowerShell, use `$env:PYTHONPATH = "."` before running the same Python
@@ -244,6 +244,7 @@ The programs in [`examples/`](examples/) demonstrate the intended API:
 8. Draw with the directional buttons in Etch-a-Sketch.
 9. Play Tetris with the directional buttons.
 10. Choose and launch installed programs with `program_selector.py`.
+11. Connect to Wi-Fi, download a file with HTTP GET, and send JSON with HTTP POST.
 
 Snake and Tetris use the D-pad; the Etch-a-Sketch example uses the D-pad to
 draw, A to change color, B to toggle the eraser, and A+B to clear the canvas.

@@ -6,7 +6,7 @@ This repository develops a user-friendly MicroPython wrapper for the BYU-Idaho e
 
 ## Intended repository structure
 
-- `pybadge.py`: the user-facing helper library for supported eBadge functions.
+- `pybadge.py`: the user-facing helper library for supported eBadge functions. Keep programs in `examples/` separate from this implementation.
 - A hardware backend for running `pybadge.py` on the physical eBadge and a computer simulator backend for running the same programs on a regular computer.
 - `board/`: board designs and code samples used as source material for hardware details. Keep the e-badge source repository here as a Git submodule; the project is currently targeting board version V4.1.1.
 - `specifications/`: software and board specifications. Include Python coding standards and a board specification describing physical layout, pins, connected components, and capabilities such as Wi-Fi. Derive board facts from the materials in `board/` and cite or point to the relevant source files where practical.
@@ -41,9 +41,11 @@ This repository develops a user-friendly MicroPython wrapper for the BYU-Idaho e
 
 ## Cross-platform runtime and simulator
 
-- `pybadge.py` must expose the same beginner-friendly API in three runtime modes: physical hardware, interactive computer simulator, and headless test backend. Example programs should work in hardware and simulator modes without hardware-specific changes.
-- In hardware mode, delegate operations to an underlying library that interfaces with the eBadge hardware. In simulator mode, use a terminal visual of the circuit board with a simple display and clickable button controls. Focus simulation on buttons, screen, LEDs, and buzzer; state clearly which other hardware features are not simulated. Prefer a modern TUI library such as Textual or Rich when suitable.
-- In test mode, use a deterministic headless backend that does not launch a terminal UI, require a display, or block for input. Support `pytest` tests that can set button states and inspect display, LED, and buzzer outputs.
+- `pybadge.py` must provide a consistent beginner-friendly API in hardware, simulator, and headless test modes. Shared helpers should behave consistently where a feature is modeled. Programs that need unsupported simulator features, such as Wi-Fi, must identify that requirement and use a clear error path.
+- In hardware mode, use maintained repository-owned MicroPython drivers and the firmware's built-in modules. Wi-Fi scanning and connections use MicroPython's `network` module; HTTP GET/POST may use optional `urequests` or `requests`. Keep hardware details behind `pybadge.py` helpers where practical.
+- In simulator mode, use a terminal visual of the circuit board with clickable D-pad, A/B, and joystick controls. Show display operations in a readable screen output area; the simulator does not rasterize the physical LCD. Model LEDs and buzzer as well. Clearly document features that are not modeled, including Wi-Fi, accelerometer and battery readings, external GPIO, analog voltage, and PWM. Prefer a modern TUI library such as Textual or Rich when suitable.
+- In test mode, use a deterministic headless backend that does not launch a terminal UI, require a display, or block for input. Support `pytest` tests that can set input states and inspect display operations, LED and buzzer outputs, Wi-Fi state and results, HTTP requests, sensor values, GPIO values, ADC values, and PWM outputs.
+- Keep interactive hardware flows hardware-only when they require physical controls. The Wi-Fi setup screen uses the eBadge display and buttons; the simulator must report Wi-Fi as unsupported, and the headless backend must never wait for button input.
 - Make backend selection explicit for tests and predictable for interactive use. Avoid hardware or terminal UI side effects merely from importing `pybadge.py`.
 - Keep simulator and hardware behavior aligned for shared functions. Document meaningful limitations where a physical feature cannot be represented faithfully by the simulator.
 
@@ -52,4 +54,5 @@ This repository develops a user-friendly MicroPython wrapper for the BYU-Idaho e
 - Do not guess hardware pin assignments or capabilities. Verify them from board designs, board code, and the local examples before documenting them.
 - Distinguish ESP32 GPIO signal numbers from board connector labels and module package lead numbers. Document mappings for the standard jumper-bridge configuration; note that moving/removing bridges changes routing and may disconnect built-in peripherals. Do not assume software can detect physical bridge changes.
 - Keep installation commands and firmware guidance aligned with the supplied eBadge setup documentation, and clearly identify any version-specific assumptions.
-- Explain how to initialize and use the board through `pybadge.py` once that library exists; avoid documenting APIs that have not been implemented.
+- Explain how to initialize and use the implemented `pybadge.py` API; avoid documenting APIs that have not been implemented.
+- Extend `hardware_tests/run_pybadge_checks.py` whenever a new public hardware feature is added. Checks should prompt users before requiring physical setup, record pass/fail/skip, release hardware resources in `finally` blocks, and disconnect Wi-Fi before ADC2 checks that require Wi-Fi to be inactive.

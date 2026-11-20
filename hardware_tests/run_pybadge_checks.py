@@ -12,12 +12,20 @@ import pybadge
 _results = []
 
 
+class _SkipCheck(Exception):
+    """Signal that a hardware check was intentionally skipped."""
+
+
 def _record_check(name, action):
     """Run an action until it is passed, failed, or skipped."""
     while True:
         print("\n== {} ==".format(name))
         try:
             action()
+        except _SkipCheck as error:
+            print("Skipped: {}".format(error))
+            _results.append((name, "SKIP"))
+            return
         except pybadge.UnsupportedFeatureError as error:
             print("Skipped: {}".format(error))
             _results.append((name, "SKIP"))
@@ -79,12 +87,76 @@ def _check_display():
 
 
 def _check_wifi():
-    networks = pybadge.scan_wifi()
-    print("Visible networks (SSID, RSSI dBm):")
-    for network in networks:
-        print("  {}".format(network))
-    if not networks:
-        print("No networks were returned; this may be normal in a shielded area.")
+    try:
+        networks = pybadge.scan_wifi()
+        print("Visible networks (SSID, RSSI dBm):")
+        for network in networks:
+            print("  {}".format(network))
+        if not networks:
+            print("No networks were returned; this may be normal in a shielded area.")
+        print("Current Wi-Fi information: {}".format(pybadge.wifi_info()))
+        pybadge.display_wifi_info()
+        input("Confirm the status shown on the display, then press Enter. ")
+    finally:
+        # The later ADC2 check requires Wi-Fi to be inactive.
+        pybadge.disconnect_wifi()
+
+
+def _check_wifi_setup():
+    print("Use the badge screen and buttons to select a network and enter its password.")
+    print("The check disconnects Wi-Fi afterward so the ADC2 check can run.")
+    try:
+        connected = pybadge.connect_wifi_with_screen()
+        if not connected:
+            raise RuntimeError("Wi-Fi setup was cancelled or did not connect.")
+
+        state = pybadge.is_wifi_connected()
+        info = pybadge.wifi_info()
+        pybadge.display_wifi_info()
+        print("is_wifi_connected(): {}".format(state))
+        print("wifi_info(): {}".format(info))
+        input("Confirm the connected network and details, then press Enter. ")
+        print("Both connection status and dictionary details should be available.")
+    finally:
+        # Also disable the interface after a timeout or canceled setup.
+        pybadge.disconnect_wifi()
+
+
+def _check_http_helpers():
+    print("Enter test endpoints, or leave both blank to skip this check.")
+    get_url = input("Small HTTP GET URL (blank to skip GET): ").strip()
+    post_url = input("HTTP POST test endpoint (blank to skip POST): ").strip()
+    if not get_url and not post_url:
+        raise _SkipCheck("no GET or POST test endpoint was supplied")
+    if post_url:
+        print("POST sends a small JSON test payload to the endpoint you entered.")
+
+    try:
+        if not pybadge.is_wifi_connected():
+            print("Use the badge screen and buttons to connect to Wi-Fi.")
+            if not pybadge.connect_wifi_with_screen():
+                raise RuntimeError("Wi-Fi setup was cancelled or did not connect.")
+
+        if get_url:
+            save_path = input(
+                "Optional GET destination file on the badge (blank returns bytes): "
+            ).strip()
+            if save_path:
+                result = pybadge.download_url(get_url, filename=save_path)
+                print("GET saved the response to {}.".format(result))
+            else:
+                result = pybadge.download_url(get_url)
+                print("GET returned {} bytes.".format(len(result)))
+
+        if post_url:
+            result = pybadge.post_url(
+                post_url,
+                json={"message": "eBadge hardware check"},
+            )
+            print("POST returned {} response bytes.".format(len(result)))
+        input("Review the GET/POST results, then press Enter to record them. ")
+    finally:
+        pybadge.disconnect_wifi()
 
 
 def _check_joystick():
@@ -169,6 +241,8 @@ def main():
         _record_check("Buzzer", _check_buzzer)
         _record_check("Display", _check_display)
         _record_check("Wi-Fi scan", _check_wifi)
+        _record_check("Wi-Fi setup and connection info", _check_wifi_setup)
+        _record_check("HTTP GET and POST", _check_http_helpers)
         _record_check("GPIO HIGH/LOW loopback", _check_gpio_loopback)
         _record_check("GPIO PWM", _check_pwm)
         _record_check("Analog voltage", _check_adc)

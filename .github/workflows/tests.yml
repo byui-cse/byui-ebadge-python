@@ -22,7 +22,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install test dependency
-        run: python -m pip install pytest
+        run: python -m pip install pytest pillow
 
       - name: Run headless tests
         run: python -m pytest

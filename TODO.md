@@ -30,7 +30,7 @@
 - [x] Add simple display drawing helpers for pixels, lines, and outlined or filled rectangles in the applicable backends.
 - [x] Implement accelerometer readings in g and battery-voltage readings in volts in applicable backends. Hardware battery readings use the nominal ×16 divider ratio and still require physical calibration; never describe voltage as a charge percentage.
 - [x] Implement external GPIO input/output helpers, `HIGH`/`LOW` checks, PWM output, analog voltage measurement, and addressable LED strip controls in each applicable backend. GPIO13–GPIO18 (`IO13`–`IO18`) are ADC2 channels 2–7 on the ESP32-S3; analog reads require Wi-Fi inactive.
-- [x] Validate `read_voltage()` accuracy and ADC behavior with the target firmware on physical V4.1.1 hardware. The human-run `HardwareBackend` check reported ADC voltage PASS; measured values were not included in the report.
+- [ ] Validate `read_voltage()` accuracy with a known source on physical V4.1.1 hardware and record both the source voltage and reported reading. The human-run `HardwareBackend` check passed but did not record measurement values.
 - [ ] Calibrate normalized joystick direction and center behavior on physical V4.1.1 hardware before enabling hardware-mode `joystick()`.
 - [x] Document the standard jumper-bridge routing assumed by built-in peripheral helpers and the current procedure for nonstandard routing: use GPIO helpers for the actual signal or restore the standard bridge positions.
 - [x] Create a host-side `resize_image.py` utility that accepts common PNG/JPG inputs, preserves aspect ratio, fits them to the 320 × 240 badge display, and outputs a 24-bit BMP supported by the hardware image helper.
@@ -57,7 +57,7 @@
 ## Additional requested work
 
 - [x] Rename the Python module/import to `byui_ebadge.py` / `byui_ebadge` and update maintained code and documentation.
-- [ ] Rename the GitHub repository to `byui-ebadge` and update repository links after the repository move is coordinated.
+- [x] Rename the GitHub repository to `byui-cse/byui-ebadge-python` and update this checkout's `origin` remote.
 - [x] Extend `deploy.py` to upload a complete local directory tree, including resources such as a directory of photos, while preserving its directory structure on the badge.
 - [x] Clean up README deployment commands to use mpremote port auto-detection by default and explain that `--port <PORT>` is optional when automatic selection works.
 - [x] Add a digital picture-frame example that cycles through image files in a directory.

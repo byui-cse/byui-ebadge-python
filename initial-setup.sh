@@ -64,6 +64,25 @@ echo "Erasing flash and installing MicroPython (esptool will detect the port)."
 
 echo "Deploying the eBadge library, prepared Python logo, and example 04."
 echo "Running: $PYTHON deploy.py --install-library --asset $IMAGE_PATH examples/04_display_logo.py"
-"$PYTHON" deploy.py --install-library --asset "$IMAGE_PATH" examples/04_display_logo.py
+echo "Waiting for the firmware's first-boot filesystem setup to finish."
+sleep 3
+
+DEPLOYED=0
+for attempt in 1 2 3; do
+    echo "Deploy attempt $attempt/3."
+    if "$PYTHON" deploy.py --install-library --asset "$IMAGE_PATH" examples/04_display_logo.py; then
+        DEPLOYED=1
+        break
+    fi
+    if [[ "$attempt" -lt 3 ]]; then
+        echo "Deployment did not connect (attempt $attempt/3); retrying in 3 seconds."
+        sleep 3
+    fi
+done
+
+if [[ "$DEPLOYED" -ne 1 ]]; then
+    echo "Error: deployment failed after 3 attempts." >&2
+    exit 1
+fi
 
 echo "Setup complete. Power-cycle the badge or press its reset button to run the logo example."

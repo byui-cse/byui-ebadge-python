@@ -71,9 +71,23 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "Deploying the eBadge library, prepared Python logo, and example 04."
-& $PythonCommand @PythonPrefixArgs $DeployScript --install-library --asset $LogoPath $ExampleScript
-if ($LASTEXITCODE -ne 0) {
-    throw "deploy.py could not install the library and logo example."
+Write-Host "Waiting for the firmware's first-boot filesystem setup to finish."
+Start-Sleep -Seconds 3
+
+$DeploymentSucceeded = $false
+for ($Attempt = 1; $Attempt -le 3; $Attempt++) {
+    & $PythonCommand @PythonPrefixArgs $DeployScript --install-library --asset $LogoPath $ExampleScript
+    if ($LASTEXITCODE -eq 0) {
+        $DeploymentSucceeded = $true
+        break
+    }
+    if ($Attempt -lt 3) {
+        Write-Warning "Deployment did not connect (attempt $Attempt/3); retrying in 3 seconds."
+        Start-Sleep -Seconds 3
+    }
+}
+if (-not $DeploymentSucceeded) {
+    throw "deploy.py could not install the library and logo example after 3 attempts."
 }
 
 Write-Host "Setup complete. Power-cycle the badge or press its reset button to run the logo example."

@@ -408,7 +408,7 @@ def _color_style(color):
         red, green, blue = color
         return "#%02x%02x%02x" % (red, green, blue)
     colors = {
-        "off": "#9e9e9e",
+        "off": "#808080",
         "black": "#000000",
         "white": "#ffffff",
         "red": "#ff0000",

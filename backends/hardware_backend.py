@@ -378,15 +378,7 @@ class HardwareBackend:
         """Connect to an access point, respecting the requested timeout."""
         wlan = self._wlan()
         if wlan.isconnected():
-            try:
-                current_ssid = wlan.config("ssid")
-                if isinstance(current_ssid, bytes):
-                    current_ssid = current_ssid.decode()
-            except (AttributeError, OSError, TypeError, ValueError):
-                current_ssid = None
-            if current_ssid == ssid:
-                return True
-            wlan.disconnect()
+            return True
         wlan.active(True)
         wlan.connect(ssid, password)
         start = self._utime.ticks_ms()

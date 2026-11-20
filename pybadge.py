@@ -406,12 +406,20 @@ def connect_wifi_with_screen(timeout_ms=15000):
     if selected is None:
         return False
 
+    current_info = wifi_info()
+    if current_info["connected"] and current_info["ssid"] == selected["ssid"]:
+        display_wifi_info()
+        return True
+
     if selected.get("security") == "open":
         password = ""
     else:
         password = _enter_wifi_password(selected["ssid"])
         if password is None:
             return False
+
+    if current_info["connected"]:
+        disconnect_wifi()
 
     display_clear()
     display_text("Connecting to Wi-Fi", x=8, y=8)

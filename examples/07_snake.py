@@ -54,22 +54,40 @@ def direction_from_buttons(current_direction):
 
 
 def draw_board(snake, food, score):
-    """Redraw the playfield and score."""
+    """Draw the initial playfield, score, and controls."""
     pybadge.display_clear(pybadge.BLACK)
     pybadge.draw_rectangle(
         ORIGIN_X - 2,
         ORIGIN_Y - 2,
-        GRID_WIDTH * CELL_SIZE + 3,
-        GRID_HEIGHT * CELL_SIZE + 3,
+        GRID_WIDTH * CELL_SIZE + 2,
+        GRID_HEIGHT * CELL_SIZE + 2,
         pybadge.WHITE,
     )
-    pybadge.display_text("SCORE {}".format(score), x=190, y=20)
+    draw_score(score)
     pybadge.display_text("D-pad: steer", x=190, y=48)
     pybadge.display_text("A: restart", x=190, y=68)
     for index, (x, y) in enumerate(snake):
         draw_cell(x, y, pybadge.GREEN if index == 0 else (0, 100, 0))
     if food is not None:
         draw_cell(food[0], food[1], pybadge.RED)
+
+
+def draw_score(score):
+    """Update the score without redrawing the playfield."""
+    pybadge.display_text("SCORE {}".format(score), x=190, y=20)
+
+
+def draw_move(previous_head, previous_tail, next_head, eating, food, score):
+    """Redraw only cells and status that changed on one game tick."""
+    if not eating:
+        draw_cell(previous_tail[0], previous_tail[1], pybadge.BLACK)
+    draw_cell(previous_head[0], previous_head[1], (0, 100, 0))
+    draw_cell(next_head[0], next_head[1], pybadge.GREEN)
+
+    if eating:
+        draw_score(score)
+        if food is not None:
+            draw_cell(food[0], food[1], pybadge.RED)
 
 
 def wait_for_restart():
@@ -103,6 +121,8 @@ def play_round():
         if next_head in body:
             break
 
+        previous_head = snake[0]
+        previous_tail = snake[-1]
         snake.insert(0, next_head)
         if eating:
             score += 1
@@ -111,7 +131,7 @@ def play_round():
         else:
             snake.pop()
 
-        draw_board(snake, food, score)
+        draw_move(previous_head, previous_tail, next_head, eating, food, score)
         if food is None:
             break
         pybadge.pause(FRAME_MS)

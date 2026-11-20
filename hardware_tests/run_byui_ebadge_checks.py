@@ -160,9 +160,25 @@ def _check_http_helpers():
 
 
 def _check_joystick():
-    print("Move the joystick in all directions and verify normalized readings.")
-    print("The hardware direction mapping is pending physical calibration.")
-    byui_ebadge.joystick()
+    print("Check the center and each direction using normalized (x, y) values.")
+    readings = {}
+    for position in ("center", "left", "right", "up", "down"):
+        input("Place the joystick at {} and press Enter. ".format(position))
+        readings[position] = byui_ebadge.joystick()
+        print("{}: {}".format(position, readings[position]))
+
+    center = readings["center"]
+    checks = (
+        ("center", abs(center[0]) <= 0.1 and abs(center[1]) <= 0.1),
+        ("left", readings["left"][0] <= -0.8 and abs(readings["left"][1]) <= 0.2),
+        ("right", readings["right"][0] >= 0.8 and abs(readings["right"][1]) <= 0.2),
+        ("up", readings["up"][1] >= 0.8 and abs(readings["up"][0]) <= 0.2),
+        ("down", readings["down"][1] <= -0.8 and abs(readings["down"][0]) <= 0.2),
+    )
+    for position, passed in checks:
+        print("{} direction: {}".format(position, "PASS" if passed else "FAIL"))
+    if not all(passed for _, passed in checks):
+        raise RuntimeError("Joystick direction or center readings were out of range.")
 
 
 def _check_gpio_loopback():
@@ -225,8 +241,25 @@ def _check_battery_voltage():
     input("Compare with a meter if available, then press Enter to record. ")
 
 
+def run_joystick_check():
+    """Run only the normalized joystick check on physical hardware."""
+    del _results[:]
+    byui_ebadge.initialize(mode="hardware")
+    try:
+        _record_check("Joystick", _check_joystick)
+    finally:
+        byui_ebadge.shutdown()
+
+    print("\nJoystick check summary:")
+    for name, result in _results:
+        print("{}: {}".format(result, name))
+
+
 def main():
     """Run each supported check and print a final result summary."""
+    # A MicroPython REPL can import this module once and call main repeatedly.
+    # Start each displayed summary with only this invocation's results.
+    del _results[:]
     byui_ebadge.initialize(mode="hardware")
     try:
         _record_check("Button A", lambda: _check_button(byui_ebadge.BUTTON_A, "A"))

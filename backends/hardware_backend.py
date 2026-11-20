@@ -28,6 +28,11 @@ class HardwareBackend:
         "purple": (128, 0, 128),
     }
     _ADC_PINS = (13, 14, 15, 16, 17, 18)
+    _JOYSTICK_X_PIN = 8
+    _JOYSTICK_Y_PIN = 9
+    _JOYSTICK_X_CALIBRATION = (2012, 455, 3951)
+    _JOYSTICK_Y_CALIBRATION = (1977, 342, 4092)
+    _JOYSTICK_DEADZONE = 0.08
     _BATTERY_SENSE_PIN = 12
     _BATTERY_DIVIDER_GAIN = 16.0
     _DISPLAY_WIDTH = 320
@@ -57,6 +62,7 @@ class HardwareBackend:
         self._pin_modes = {}
         self._pwms = {}
         self._adcs = {}
+        self._joystick_adcs = None
         self._battery_adc = None
         self._accelerometer = None
         self._accelerometer_checked = False
@@ -139,6 +145,10 @@ class HardwareBackend:
         for adc in self._adcs.values():
             self._deinit(adc)
         self._adcs.clear()
+        if self._joystick_adcs is not None:
+            for adc in self._joystick_adcs:
+                self._deinit(adc)
+            self._joystick_adcs = None
         if self._battery_adc is not None:
             self._deinit(self._battery_adc)
             self._battery_adc = None
@@ -156,11 +166,38 @@ class HardwareBackend:
         return bool(self._buttons[button].value())
 
     def joystick(self):
-        """Raise until physical center and direction calibration is complete."""
-        raise UnsupportedFeatureError(
-            "Normalized joystick directions need V4.1.1 center and direction "
-            "calibration before hardware support can be enabled."
+        """Return calibrated normalized ``(x, y)`` joystick directions."""
+        if self._joystick_adcs is None:
+            self._joystick_adcs = (
+                self._new_adc(self._machine.Pin(self._JOYSTICK_X_PIN)),
+                self._new_adc(self._machine.Pin(self._JOYSTICK_Y_PIN)),
+            )
+        x_adc, y_adc = self._joystick_adcs
+        x_center, x_low, x_high = self._JOYSTICK_X_CALIBRATION
+        y_center, y_low, y_high = self._JOYSTICK_Y_CALIBRATION
+        x_value = self._normalize_joystick_axis(
+            x_adc.read(), x_center, x_low, x_high
         )
+        y_value = self._normalize_joystick_axis(
+            y_adc.read(), y_center, y_low, y_high
+        )
+        return x_value, y_value
+
+    @classmethod
+    def _normalize_joystick_axis(cls, raw_value, center, low, high):
+        """Map one calibrated ADC axis to -1..1 with a center dead zone."""
+        if raw_value < center:
+            value = -(center - raw_value) / (center - low)
+        else:
+            value = (raw_value - center) / (high - center)
+        value = max(-1.0, min(1.0, value))
+        magnitude = abs(value)
+        if magnitude <= cls._JOYSTICK_DEADZONE:
+            return 0.0
+        magnitude = (magnitude - cls._JOYSTICK_DEADZONE) / (
+            1.0 - cls._JOYSTICK_DEADZONE
+        )
+        return -magnitude if value < 0 else magnitude
 
     def set_rgb_led(self, color):
         """Set the small onboard RGB indicator."""

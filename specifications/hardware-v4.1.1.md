@@ -37,8 +37,8 @@ The following table summarizes the V4.1.1 GPIO mappings. Verify the standard bri
 | Right button | 10 | Active-high |
 | B button | 33 | Active-high |
 | A button | 34 | Active-high |
-| Joystick X | 8 | ADC; raw readings need calibration |
-| Joystick Y | 9 | ADC; raw readings need calibration |
+| Joystick X | 8 | ADC; calibrated center 2012, left 455, right 3951 (raw counts) |
+| Joystick Y | 9 | ADC; calibrated center 1977, down 342, up 4092 (raw counts) |
 | RGB LED red channel | 2 | PWM |
 | RGB LED green channel | 4 | PWM |
 | RGB LED blue channel | 5 | PWM |
@@ -48,6 +48,11 @@ The following table summarizes the V4.1.1 GPIO mappings. Verify the standard bri
 | Accelerometer SDA | 41 | I²C bus 0, 400 kHz |
 | Accelerometer SCL | 42 | I²C bus 0, 400 kHz |
 | External helper GPIOs | 13–18 | Supported by `configure_pin()` for exposed headers |
+
+The joystick calibration values in the table were measured on one physical
+V4.1.1 badge. Hardware `joystick()` maps those center and endpoint counts to
+normalized directions and applies a 0.08 dead zone; other badges should be
+checked with the raw-reading calibration helper.
 
 The V4.1.1 production netlist confirms GPIO13 through GPIO18 are available at
 J9 odd-numbered contacts 1, 3, 5, 7, 9, and 11. The board silk labels these
@@ -125,7 +130,7 @@ schematic and production netlist for electrical connectivity and jumper routing.
 | Capability | Evidence / behavior to support |
 | --- | --- |
 | Buttons | Six digital inputs: A, B, up, down, left, right. The documented input mapping reports pressed when the GPIO reads high. |
-| Joystick | Two analog axes, exposed as raw `(x, y)` ADC counts. A beginner API may add direction/center interpretation only after calibration behavior is verified. |
+| Joystick | Two analog axes on GPIO8/9. The hardware API returns normalized `(x, y)` values using measured center and endpoints with a small center dead zone; the simulator and test modes return normalized values too. |
 | Display | ST7789 TFT; 320 × 240 logical pixels in the current API. Text and basic drawing are available through the driver. |
 | RGB LED | Three PWM channels; support named colors and/or RGB values through a friendly helper. |
 | Addressable LEDs | 24 LEDs on a serial data line. The API exposes a color palette and single-pixel/ring operations. |

@@ -30,8 +30,8 @@
 - [x] Add simple display drawing helpers for pixels, lines, and outlined or filled rectangles in the applicable backends.
 - [x] Implement accelerometer readings in g and battery-voltage readings in volts in applicable backends. Hardware battery readings use the nominal ×16 divider ratio and still require physical calibration; never describe voltage as a charge percentage.
 - [x] Implement external GPIO input/output helpers, `HIGH`/`LOW` checks, PWM output, analog voltage measurement, and addressable LED strip controls in each applicable backend. GPIO13–GPIO18 (`IO13`–`IO18`) are ADC2 channels 2–7 on the ESP32-S3; analog reads require Wi-Fi inactive.
-- [ ] Validate `read_voltage()` accuracy with a known source on physical V4.1.1 hardware and record both the source voltage and reported reading. The human-run `HardwareBackend` check passed but did not record measurement values.
-- [ ] Calibrate normalized joystick direction and center behavior on physical V4.1.1 hardware before enabling hardware-mode `joystick()`.
+- [x] Validate `read_voltage()` with a known source on physical V4.1.1 hardware and record the source and reported reading. The nominal 1.5 V source read 1.348 V on GPIO13 (0.152 V / 10.1% below nominal); the user reviewed and accepted this difference. The source's exact meter-measured voltage was not recorded.
+- [x] Validate normalized joystick direction and center behavior on physical V4.1.1 hardware. Calibration samples from the connected badge: GPIO8/X center 2012, left 455, right 3951; GPIO9/Y center 1977, down 342, up 4092. The hardware mapping uses these values with an 0.08 normalized dead zone. Public API check PASS: center `(0.0, 0.0)`, left `(-1.0, 0.0)`, right `(0.890, 0.0)`, up `(0.0, 0.917)`, down `(0.0, -0.991)`.
 - [x] Document the standard jumper-bridge routing assumed by built-in peripheral helpers and the current procedure for nonstandard routing: use GPIO helpers for the actual signal or restore the standard bridge positions.
 - [x] Create a host-side `resize_image.py` utility that accepts common PNG/JPG inputs, preserves aspect ratio, fits them to the 320 × 240 badge display, and outputs a 24-bit BMP supported by the hardware image helper.
 - [x] Track `assets/byui-cse.png`, generate its prepared BMP with `resize_image.py`, and document how to copy that resource to the badge before running the logo example.
@@ -44,7 +44,7 @@
 - [x] Include accelerometer and battery-voltage checks in headless and interactive hardware validation. These are not required in the focused terminal simulator.
 - [x] Document how to run automated tests on a computer and how to run/interpret the interactive checks on the physical badge.
 - [x] Have a human upload and run `hardware_tests/run_hardware_backend_checks.py` on a physical V4.1.1 badge. Reported: PASS for A/B/up/down/left/right buttons, RGB indicator, addressable LED strip, buzzer, display, Wi-Fi scan, GPIO HIGH/LOW loopback, GPIO PWM, ADC voltage, accelerometer, and battery/selected-rail voltage; joystick was skipped pending calibration.
-- [ ] Have a human upload and run `hardware_tests/run_byui_ebadge_checks.py` on a physical V4.1.1 badge; record the results and investigate any failures.
+- [x] Have a human upload and run `hardware_tests/run_byui_ebadge_checks.py` on a physical V4.1.1 badge; record the results and investigate any failures. Reported PASS: all six buttons, RGB indicator, addressable LED strip, buzzer, display, Wi-Fi scan and setup/info, HTTP GET, GPIO HIGH/LOW loopback, GPIO PWM, analog voltage, accelerometer, and battery/selected-rail voltage. Joystick was SKIP pending calibration. ADC read 1.348 V from a nominal 1.5 V source; source meter voltage was not supplied. Battery estimate was 4.912 V. The REPL summary included earlier A/B results from an interrupted run; `main()` now clears its result list before each run.
 
 ## Example programs
 
@@ -68,7 +68,7 @@
 - [x] Create a program selector that lets a user choose which installed program to run (`program_selector.py`). Deploy it as `main.py`; it returns to the menu after a selected program finishes or is interrupted.
 - [x] Investigate USB keyboard support: V4.1.1 has native USB-host hardware, but the board setup notes identify keyboard host mode as Arduino-only and the supplied MicroPython 1.29.0 generic ESP32-S3 firmware has no USB-host HID API. A keyboard terminal would need custom firmware or a native host driver; it is not supported by the current Python target. See [`hardware-v4.1.1.md`](specifications/hardware-v4.1.1.md).
 - [x] Expand Wi-Fi support in `byui_ebadge.py`. Use MicroPython's built-in `network` module instead of adding a separate Wi-Fi dependency; add an on-screen network and password flow plus dictionary and display helpers for connection details.
-  - [ ] Validate the on-screen setup flow and connected SSID, RSSI, and IP reporting on physical V4.1.1 hardware.
+  - [x] Validate the on-screen setup flow and connected SSID, RSSI, and IP reporting on physical V4.1.1 hardware. Reported PASS: connected to `BYUI_Visitor`, RSSI -56 dBm, IP 10.15.46.2; the setup check disconnected Wi-Fi afterward.
 - [x] Add a README tutorial explaining how to build a program, detect pressed buttons, control the board lights, and use the display.
 
 ## Deferred future work

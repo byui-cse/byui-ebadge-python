@@ -493,10 +493,12 @@ these library files are installed separately from user programs.
 The `backends/hardware/` package supplies its ST7789 display driver and font.
 The addressable LED strip uses MicroPython's `neopixel` module when that
 feature is called.
-The joystick direction mapping remains unavailable pending physical
-validation. Battery-voltage readings use the nominal ×16 divider ratio and
-still need calibration on the physical board. Confirm the VMain-to-IO12 jumper
-is installed; the software cannot detect that bridge. GPIO13–GPIO18 voltage
+The hardware joystick mapping uses center and endpoint ADC readings measured
+on one V4.1.1 badge, with a 0.08 normalized dead zone. Other badges may need
+their readings checked with `hardware_tests/run_joystick_calibration.py`.
+Battery-voltage readings use the nominal ×16 divider ratio and still need
+calibration on the physical board. Confirm the VMain-to-IO12 jumper is
+installed; the software cannot detect that bridge. GPIO13–GPIO18 voltage
 readings use MicroPython's per-chip calibrated ADC conversion and require
 Wi-Fi to be inactive. Verify readings on the physical badge before relying on
 them.
@@ -523,8 +525,10 @@ run_byui_ebadge_checks.main()
 
 Follow the prompts to press and release each button, confirm LED/display/tone
 output, inspect Wi-Fi results, and record each check as pass, fail, retry, or
-skip. The runner prints a final summary. The joystick check is expected to
-skip until its hardware direction and center calibration is implemented.
+skip. The runner prints a final summary and checks the joystick center and all
+four normalized directions. To inspect raw joystick ADC values separately,
+deploy `hardware_tests/run_joystick_calibration.py` and call
+`run_joystick_calibration.main()` from the REPL.
 
 Optional GPIO checks require a wire between GPIO13 and GPIO14; connect no
 power source for that loopback. The PWM check needs an oscilloscope or an LED
@@ -581,8 +585,13 @@ x, y = byui_ebadge.joystick()
 For `x`, `-1.0` means fully left and `1.0` fully right. For `y`, `-1.0`
 means fully down and `1.0` fully up. Values near zero mean the stick is near
 the center. These are normalized direction values, not raw voltage or ADC
-readings. The hardware backend raises `UnsupportedFeatureError` until
-physical center and direction calibration is complete.
+readings. The hardware backend uses the current V4.1.1 calibration and applies
+a 0.08 dead zone around the center. Its calibration measurements were
+GPIO8/X center 2012, left 455, right 3951; GPIO9/Y center 1977, down 342, up
+4092. These are raw ADC counts from one physical badge.
+To verify the normalized hardware readings without repeating the full test
+suite, run `run_byui_ebadge_checks.run_joystick_check()` from the MicroPython
+REPL.
 
 The setup instructions above cover firmware installation and REPL access. Earlier MicroPython demonstrations exercised the buttons, joystick, RGB and addressable LEDs, buzzer, display, Wi-Fi, accelerometer, battery readings, and exposed GPIO. The hardware specification summarizes which capabilities are supported by the current library.
 

@@ -79,8 +79,8 @@ def collides(grid, piece, offset_x=0, offset_y=0, rotation=None):
     return False
 
 
-def draw_block(x, y, color):
-    """Draw one Tetris block with a small black gap around it."""
+def draw_cell(x, y, color):
+    """Draw one Tetris cell with a small black gap around it."""
     byui_ebadge.draw_rectangle(
         GRID_X + x * CELL_SIZE,
         GRID_Y + y * CELL_SIZE,
@@ -91,8 +91,8 @@ def draw_block(x, y, color):
     )
 
 
-def draw_game(grid, piece, score, paused=False):
-    """Draw the settled grid, active piece, and game information."""
+def draw_static_screen(score):
+    """Draw the playfield border and the labels that do not change in play."""
     byui_ebadge.display_clear(byui_ebadge.BLACK)
     byui_ebadge.draw_rectangle(
         GRID_X - 2,
@@ -101,32 +101,53 @@ def draw_game(grid, piece, score, paused=False):
         GRID_HEIGHT * CELL_SIZE + 3,
         byui_ebadge.WHITE,
     )
-    for y in range(GRID_HEIGHT):
-        for x in range(GRID_WIDTH):
-            color_index = grid[y][x]
-            if color_index:
-                draw_block(x, y, COLORS[color_index - 1])
-
-    if piece is not None:
-        shape = get_shape(piece)
-        for shape_y in range(4):
-            for shape_x in range(4):
-                x = piece["x"] + shape_x
-                y = piece["y"] + shape_y
-                if shape[shape_y][shape_x] and 0 <= y < GRID_HEIGHT:
-                    draw_block(x, y, COLORS[piece["kind"]])
 
     byui_ebadge.display_text("TETRIS", x=180, y=20, color=byui_ebadge.CYAN)
-    byui_ebadge.display_text("Score {}".format(score), x=180, y=48)
+    draw_score(score)
     byui_ebadge.display_text("Left/Right: move", x=180, y=82)
     byui_ebadge.display_text("Up: rotate", x=180, y=102)
     byui_ebadge.display_text("Down: drop", x=180, y=122)
     byui_ebadge.display_text("A: pause", x=180, y=142)
     byui_ebadge.display_text("B: new game", x=180, y=162)
+
+
+def draw_score(score):
+    """Update the score label without redrawing the rest of the screen."""
+    byui_ebadge.draw_rectangle(178, 44, 138, 24, byui_ebadge.BLACK, filled=True)
+    byui_ebadge.display_text("Score {}".format(score), x=180, y=48)
+
+
+def cell_color(grid, piece, shape, x, y):
+    """Return the color currently visible at one playfield cell."""
+    color_index = grid[y][x]
+    color = COLORS[color_index - 1] if color_index else byui_ebadge.BLACK
+
+    if piece is None or shape is None:
+        return color
+
+    shape_x = x - piece["x"]
+    shape_y = y - piece["y"]
+    if 0 <= shape_x < 4 and 0 <= shape_y < 4 and shape[shape_y][shape_x]:
+        return COLORS[piece["kind"]]
+    return color
+
+
+def draw_changed_cells(grid, piece, rendered_cells):
+    """Redraw only cells whose visible color differs from the cached frame."""
+    shape = get_shape(piece) if piece is not None else None
+    for y in range(GRID_HEIGHT):
+        for x in range(GRID_WIDTH):
+            color = cell_color(grid, piece, shape, x, y)
+            if rendered_cells[y][x] != color:
+                draw_cell(x, y, color)
+                rendered_cells[y][x] = color
+
+
+def draw_pause_indicator(paused):
+    """Update the pause label in the side panel, outside the playfield."""
+    byui_ebadge.draw_rectangle(178, 180, 138, 24, byui_ebadge.BLACK, filled=True)
     if paused:
-        byui_ebadge.draw_rectangle(77, 96, 166, 42, byui_ebadge.BLACK, filled=True)
-        byui_ebadge.draw_rectangle(76, 95, 168, 44, byui_ebadge.WHITE)
-        byui_ebadge.display_text("PAUSED", x=126, y=110, color=byui_ebadge.YELLOW)
+        byui_ebadge.display_text("PAUSED", x=180, y=184, color=byui_ebadge.YELLOW)
 
 
 def new_piece():
@@ -165,7 +186,9 @@ def play_game():
     previous_a = False
     previous_b = False
     previous_up = False
-    draw_game(grid, piece, score)
+    rendered_cells = [[None] * GRID_WIDTH for _ in range(GRID_HEIGHT)]
+    draw_static_screen(score)
+    draw_changed_cells(grid, piece, rendered_cells)
 
     while not collides(grid, piece):
         a_pressed = byui_ebadge.is_pressed(byui_ebadge.BUTTON_A)
@@ -174,12 +197,15 @@ def play_game():
 
         if b_pressed and not previous_b:
             return
-        if a_pressed and not previous_a:
+        pause_changed = a_pressed and not previous_a
+        if pause_changed:
             paused = not paused
+            draw_pause_indicator(paused)
         previous_a = a_pressed
         previous_b = b_pressed
 
         changed = False
+        score_changed = False
         if not paused:
             if move_cooldown > 0:
                 move_cooldown -= 1
@@ -211,19 +237,20 @@ def play_game():
                     lock_piece(grid, piece)
                     grid, cleared = clear_completed_rows(grid)
                     score += cleared * 100
+                    score_changed = cleared > 0
                     piece = new_piece()
                     if collides(grid, piece):
                         break
                 changed = True
         previous_up = up_pressed
         if changed:
-            draw_game(grid, piece, score, paused)
-        elif paused and frame % 10 == 0:
-            draw_game(grid, piece, score, paused)
+            draw_changed_cells(grid, piece, rendered_cells)
+        if score_changed:
+            draw_score(score)
         frame += 1
         byui_ebadge.pause(FRAME_MS)
 
-    draw_game(grid, None, score)
+    draw_changed_cells(grid, None, rendered_cells)
     byui_ebadge.display_text("GAME OVER", x=180, y=196, color=byui_ebadge.RED)
     byui_ebadge.display_text("B: new game", x=180, y=216)
     while not byui_ebadge.is_pressed(byui_ebadge.BUTTON_B):

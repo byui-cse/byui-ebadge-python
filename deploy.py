@@ -5,7 +5,7 @@ Examples::
     python deploy.py --port COM3 --install-library examples/01_button_led.py
     python deploy.py --port COM3 examples/03_button_tone.py
     python deploy.py --port COM3 --keep-name projects/my_program.py
-    python deploy.py --port COM3 --asset byui-cse_badge.bmp examples/04_display_logo.py
+    python deploy.py --port COM3 --asset assets/byui-cse_badge.bmp examples/04_display_logo.py
     python deploy.py --port COM3 --directory photos
 """
 

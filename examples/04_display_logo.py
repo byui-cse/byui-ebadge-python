@@ -1,6 +1,6 @@
 """Display the BYU-Idaho CSE logo prepared from the repository PNG.
 
-Run `python resize_image.py byui-cse.png` from the repository root first. Copy
+Run `python resize_image.py assets/byui-cse.png` from the repository root first. Copy
 the generated BMP to the badge when using hardware mode.
 """
 

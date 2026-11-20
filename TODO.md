@@ -4,17 +4,17 @@
 
 - [x] Add project instructions in `AGENTS.md`.
 - [x] Add Python and V4.1.1 hardware specification drafts under `specifications/`.
-- [x] Archive the course examples under `old/python/` without applying project Python standards to them.
+- [x] Keep maintained examples focused on the public API.
 - [x] Add beginner-facing example programs under `examples/`.
 
 ## Project structure and documentation
 
 - [x] Evaluate the user-facing repository workflow: compare packaging `byui_ebadge` for installation with pip against having users fork the repository and add programs under `examples/`. Document pros, cons, and a recommendation, considering setup effort, offline use, version updates, local edits, sharing, and maintenance.
-- [x] Create the top-level README with the repository map, usage instructions, current V4.1.1 board photos, and MicroPython installation steps adapted from `hardware/ebadge/README.md`.
-- [x] Add the BYU-I eBadge repository (`git@github.com:BYU-I-eBadge/e-badge.git`) as a Git submodule under `board/`.
+- [x] Create the top-level README with the repository map, usage instructions, current V4.1.1 board photos, and MicroPython installation steps adapted from the supplied eBadge setup guidance.
+- [x] Add the BYU-I eBadge repository (`git@github.com:BYU-I-eBadge/e-badge.git`) as a Git submodule under `assets/board/`.
 - [x] Create `mpremote` copy commands for the hardware backend dependencies and user programs, including device filenames and paths. Physical badge deployment remains to be validated after the backend's uncalibrated features are completed.
 - [x] Review the V4.1.1 hardware design and merge useful findings from `specifications/board_info_v4_1.md` into `specifications/hardware-v4.1.1.md`, including verified pin mappings, SD wiring, jumperable power sensing, wireless capability, and API candidates. Keep firmware-dependent details and ADC calibration clearly qualified.
-- [x] Commit the staged archive move and related documentation changes so the archived source files are recorded in Git history (recorded in the initial project commit, `55be908`).
+- [x] Record the initial source import and related documentation in Git history (initial project commit `55be908`).
 
 ## `byui_ebadge.py` and runtime modes
 
@@ -34,7 +34,7 @@
 - [ ] Calibrate normalized joystick direction and center behavior on physical V4.1.1 hardware before enabling hardware-mode `joystick()`.
 - [x] Document the standard jumper-bridge routing assumed by built-in peripheral helpers and the current procedure for nonstandard routing: use GPIO helpers for the actual signal or restore the standard bridge positions.
 - [x] Create a host-side `resize_image.py` utility that accepts common PNG/JPG inputs, preserves aspect ratio, fits them to the 320 × 240 badge display, and outputs a 24-bit BMP supported by the hardware image helper.
-- [x] Track `byui-cse.png`, generate its prepared BMP with `resize_image.py`, and document how to copy that resource to the badge before running the logo example.
+- [x] Track `assets/byui-cse.png`, generate its prepared BMP with `resize_image.py`, and document how to copy that resource to the badge before running the logo example.
 
 ## Tests
 
@@ -61,12 +61,12 @@
 - [x] Extend `deploy.py` to upload a complete local directory tree, including resources such as a directory of photos, while preserving its directory structure on the badge.
 - [x] Clean up README deployment commands to use mpremote port auto-detection by default and explain that `--port <PORT>` is optional when automatic selection works.
 - [x] Add a digital picture-frame example that cycles through image files in a directory.
-- [x] Review the archived Tetris, Etch-a-Sketch, and Snake programs in `old/` to identify required capabilities; the existing public button, display, tone, LED, and pause helpers were sufficient, so no backend changes were needed.
+- [x] Review the Tetris, Etch-a-Sketch, and Snake program requirements to identify required capabilities; the existing public button, display, tone, LED, and pause helpers were sufficient, so no backend changes were needed.
   - [x] Add Snake using the D-pad and current public drawing helpers (`examples/07_snake.py`).
   - [x] Add an Etch-a-Sketch variant using the D-pad and current public drawing helpers (`examples/08_etch_sketch.py`).
   - [x] Port Tetris using the D-pad and current public drawing helpers (`examples/09_tetris.py`).
 - [x] Create a program selector that lets a user choose which installed program to run (`program_selector.py`). Deploy it as `main.py`; it returns to the menu after a selected program finishes or is interrupted.
-- [x] Investigate USB keyboard support: V4.1.1 has native USB-host hardware, but the archived board note says keyboard host mode is Arduino-only and the supplied MicroPython 1.29.0 generic ESP32-S3 firmware has no USB-host HID API. A keyboard terminal would need custom firmware or a native host driver; it is not supported by the current Python target. See [`hardware-v4.1.1.md`](specifications/hardware-v4.1.1.md).
+- [x] Investigate USB keyboard support: V4.1.1 has native USB-host hardware, but the board setup notes identify keyboard host mode as Arduino-only and the supplied MicroPython 1.29.0 generic ESP32-S3 firmware has no USB-host HID API. A keyboard terminal would need custom firmware or a native host driver; it is not supported by the current Python target. See [`hardware-v4.1.1.md`](specifications/hardware-v4.1.1.md).
 - [x] Expand Wi-Fi support in `byui_ebadge.py`. Use MicroPython's built-in `network` module instead of adding a separate Wi-Fi dependency; add an on-screen network and password flow plus dictionary and display helpers for connection details.
   - [ ] Validate the on-screen setup flow and connected SSID, RSSI, and IP reporting on physical V4.1.1 hardware.
 - [x] Add a README tutorial explaining how to build a program, detect pressed buttons, control the board lights, and use the display.

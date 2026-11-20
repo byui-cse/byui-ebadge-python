@@ -49,8 +49,8 @@ separate simulated screen area.
 
 ## External GPIO functions (added for review)
 
-The archived `ebadge.py` accepts GPIO numbers 13 through 18 for external
-connections. The V4.1.1 production netlist confirms these signals are routed
+The V4.1.1 production netlist confirms GPIO numbers 13 through 18 are routed
+to exposed header connections. The V4.1.1 production netlist confirms these signals are routed
 to J9 contacts 1, 3, 5, 7, 9, and 11. The board silk labels them `IO13` through
 `IO18`; software should name them by ESP32 GPIO number. All built-in peripheral
 helpers assume the board's standard jumper-bridge positions. The API must not

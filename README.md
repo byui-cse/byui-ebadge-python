@@ -65,9 +65,9 @@ output. It is not a full electrical simulation.
 These V4.1.1 photos show the current target board. The front shows the controls
 and components; the back includes a printed quick reference for GPIOs and buses.
 
-![Front of the BYU-Idaho eBadge V4.1.1](byui-ebadge-front-4_1_1.jpg)
+![Front of the BYU-Idaho eBadge V4.1.1](assets/byui-ebadge-front-4_1_1.jpg)
 
-![Back of the BYU-Idaho eBadge V4.1.1](byui-ebadge-back-4_1_1.jpg)
+![Back of the BYU-Idaho eBadge V4.1.1](assets/byui-ebadge-back-4_1_1.jpg)
 
 ## Repository structure
 
@@ -76,20 +76,17 @@ and components; the back includes a printed quick reference for GPIOs and buses.
 | `byui_ebadge.py` | User-facing API shared by all runtime modes. |
 | `backends/` | Hardware, simulator, and headless test implementations. The maintained `backends/hardware/` package contains the on-device drivers. |
 | `deploy.py` | Host-side helper that uses `mpremote` to copy the library, a program, and optional assets to the badge. |
-| `board/` | eBadge Git submodule and hardware design source (initialize with the submodule command below). |
+| `assets/board/` | eBadge Git submodule and hardware design source (initialize with the submodule command below). |
 | `specifications/` | Python standards and the current V4.1.1 board specification. |
 | `examples/` | Small programs demonstrating the public API. |
 | `projects/` | A workspace for user-created programs. |
 | `simulator.py` | Runs an example or project program locally with the terminal simulator. |
-| `old/python/` | Archived course samples and hardware libraries. These are reference examples and do not follow this project's Python standards. |
-| `hardware/ebadge/` | eBadge setup guide and reference material. |
 | `resize_image.py` | Host utility that prepares one image or a directory tree of 24-bit BMPs for the badge display. |
-| `byui-cse.png` | Logo asset used by the display example. |
-| `byui-cse_badge.bmp` | Prepared 320 × 115 logo image used by the display example. |
+| `assets/byui-cse.png` | Logo asset used by the display example. |
+| `assets/byui-cse_badge.bmp` | Prepared 320 × 115 logo image used by the display example. |
 
-The current board target is V4.1.1. The hardware specification compares the
-V4 course software with the V4.1.1 design files, production netlist, and board
-photos. Firmware-dependent behavior and ADC calibration are called out where
+The current board target is V4.1.1. The hardware specification documents the
+board design, production netlist, and physical layout. Firmware-dependent behavior and ADC calibration are called out where
 they still need validation on physical hardware.
 
 ### Board labels, GPIO numbers, and jumper bridges
@@ -157,7 +154,7 @@ git submodule update --init --recursive
 ```
 
 The V4.1.1 KiCad design is in
-[`board/hardware v4.1.1/badge-esp32-s3/`](<board/hardware v4.1.1/badge-esp32-s3/>).
+[`assets/board/hardware v4.1.1/badge-esp32-s3/`](<assets/board/hardware v4.1.1/badge-esp32-s3/>).
 
 ## Set up MicroPython on the eBadge
 
@@ -176,16 +173,14 @@ Find the serial port assigned to the badge:
 
 Download a MicroPython firmware build for a generic ESP32-S3 from the
 [MicroPython ESP32-S3 downloads](https://micropython.org/download/ESP32_GENERIC_S3/).
-The course setup guide refers to `ESP32_GENERIC_S3-20260824-v1.29.0.bin`, but
-that binary is not currently present in this checkout. Use the filename of the
-firmware image you downloaded in the command below.
+Use the filename of the firmware image you downloaded in the command below.
 
 Erase the badge flash and install the firmware. Both commands try to find the
 Espressif device automatically:
 
 ```sh
 python -m esptool erase_flash
-python -m esptool --baud 460800 write_flash 0 ESP32_GENERIC_S3-20260824-v1.29.0.bin
+python -m esptool --baud 460800 write_flash 0 FIRMWARE.bin
 ```
 
 If automatic detection does not find the badge, specify its serial port by
@@ -193,7 +188,7 @@ adding `--port <PORT>` before `erase_flash` or `write_flash`.
 
 If the board does not enter download mode, hold **BOOT** while starting the
 flash operation, then release it once flashing begins. Check the installed
-`esptool` help if its command syntax differs from these course-guide commands.
+`esptool` help if its command syntax differs from these commands.
 
 Open the MicroPython REPL (interactive prompt):
 
@@ -217,8 +212,7 @@ python -m pytest
 ```
 
 GitHub Actions runs this suite automatically on every push and pull request.
-The tests are collected only from `tests/`; archived examples under `old/` are
-reference material, not pytest test modules.
+The tests are collected from `tests/`; project examples and setup documentation are not test modules.
 
 The headless suite also checks deterministic accelerometer and voltage values.
 It cannot validate the physical sensors or ADC calibration.
@@ -263,7 +257,7 @@ The programs in [`examples/`](examples/) demonstrate the intended API:
 1. Light the RGB LED while button A is held.
 2. Scan for and list nearby Wi-Fi networks.
 3. Play a tone when button A is pressed.
-4. Display the BYU-Idaho CSE logo from `byui-cse.png`.
+4. Display the BYU-Idaho CSE logo from `assets/byui-cse.png`.
 5. Draw pixels, lines, and outlined and filled rectangles.
 6. Cycle through prepared photos in a directory.
 7. Play Snake with the directional buttons.
@@ -340,10 +334,10 @@ host utility. Install Pillow if it is not already available:
 
 ```sh
 python -m pip install pillow
-python resize_image.py byui-cse.png
+python resize_image.py assets/byui-cse.png
 ```
 
-This creates `byui-cse_badge.bmp`, an uncompressed 24-bit BMP resized to fit
+This creates `assets/byui-cse_badge.bmp`, an uncompressed 24-bit BMP resized to fit
 the 320 × 240 display while preserving the source aspect ratio. Small source
 images are not enlarged.
 
@@ -416,7 +410,7 @@ by module name and started with `module_name.main()`.
 To deploy the logo example and its prepared image in one command:
 
 ```sh
-python deploy.py --install-library --asset byui-cse_badge.bmp examples/04_display_logo.py
+python deploy.py --install-library --asset assets/byui-cse_badge.bmp examples/04_display_logo.py
 ```
 
 Use `--asset FILE` to copy another resource to the badge's root directory;
@@ -457,12 +451,11 @@ selector itself.
 The deploy helper starts `mpremote` through the same Python interpreter used
 to run the script. The package must be installed in that environment. The
 helper uses the maintained backend and driver modules; files from
-`old/python/` are not required on the badge.
+the maintained library files are installed separately from user programs.
 
 `HardwareBackend` owns the eBadge pin setup and peripheral operations.
 The `backends/hardware/` package supplies its ST7789 display driver and font;
-`old/python/` remains reference material and is not needed on the badge. The
-addressable LED strip also uses MicroPython's `neopixel` module when that
+The addressable LED strip uses MicroPython's `neopixel` module when that
 feature is called.
 The joystick direction mapping remains unavailable pending physical
 validation. Battery-voltage readings use the nominal ×16 divider ratio and
@@ -555,9 +548,7 @@ the center. These are normalized direction values, not raw voltage or ADC
 readings. The hardware backend raises `UnsupportedFeatureError` until
 physical center and direction calibration is complete.
 
-For examples from the earlier course materials, see [`old/python/`](old/python/)
-and the archived [eBadge setup guide](hardware/ebadge/README.md). Those samples
-use their own board libraries and are retained as references.
+The setup instructions above cover firmware installation and REPL access. Earlier MicroPython demonstrations exercised the buttons, joystick, RGB and addressable LEDs, buzzer, display, Wi-Fi, accelerometer, battery readings, and exposed GPIO. The hardware specification summarizes which capabilities are supported by the current library.
 
 ## Specifications and contribution notes
 
@@ -568,5 +559,4 @@ use their own board libraries and are retained as references.
 - [Open tasks](TODO.md)
 
 Python standards in the software specification apply to new project code. Do
-not reformat the examples in `old/python/` or upstream files in `board/` to
-match those standards.
+not reformat upstream files in `assets/board/` to match those standards.

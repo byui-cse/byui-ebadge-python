@@ -5,7 +5,7 @@ as an uncompressed 24-bit BMP for the MicroPython display helper.
 
 Usage::
 
-    python resize_image.py byui-cse.png
+    python resize_image.py assets/byui-cse.png
     python resize_image.py photo.jpg --output photo_badge.bmp
     python resize_image.py photos/ --output-directory photos_badge/
 """

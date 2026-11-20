@@ -9,9 +9,9 @@ This repository develops a user-friendly MicroPython wrapper for the BYU-Idaho e
 - `byui_ebadge.py`: the user-facing helper library for supported eBadge functions. Keep programs in `examples/` separate from this implementation.
 - A hardware backend for running `byui_ebadge.py` on the physical eBadge and a computer simulator backend for running the same programs on a regular computer.
 - `projects/`: a user workspace for personal programs; keep maintained examples in `examples/` and shared implementation in the library and backends.
-- `board/`: board designs and code samples used as source material for hardware details. Keep the e-badge source repository here as a Git submodule; the project is currently targeting board version V4.1.1.
-- `specifications/`: software and board specifications. Include Python coding standards and a board specification describing physical layout, pins, connected components, and capabilities such as Wi-Fi. Derive board facts from the materials in `board/` and cite or point to the relevant source files where practical.
-- `README.md`: explain the repository, its structure, and how to set up and use the board. Embed current V4.1.1 board photos. Include the MicroPython installation instructions from `hardware/ebadge/README.md`, adapting paths to the final layout as needed.
+- `assets/board/`: board designs and code samples used as source material for hardware details. Keep the e-badge source repository here as a Git submodule; the project is currently targeting board version V4.1.1.
+- `specifications/`: software and board specifications. Include Python coding standards and a board specification describing physical layout, pins, connected components, and capabilities such as Wi-Fi. Derive board facts from the materials in `assets/board/` and cite or point to the relevant source files where practical.
+- `README.md`: explain the repository, its structure, and how to set up and use the board. Embed current V4.1.1 board photos and keep MicroPython installation instructions aligned with the supplied firmware guidance.
 
 ## Distribution and user programs
 
@@ -27,16 +27,15 @@ This repository develops a user-friendly MicroPython wrapper for the BYU-Idaho e
 
 ## Hardware source and version scope
 
-- The upstream source is `git@github.com:BYU-I-eBadge/e-badge.git`, included as a Git submodule under `board/`.
+- The upstream source is `git@github.com:BYU-I-eBadge/e-badge.git`, included as a Git submodule under `assets/board/`.
 - The current target is V4.1.1. Its layout is in the upstream repository's `hardware v4.1.1/` directory (the directory name contains spaces).
-- Consult other upstream component information as needed. Use the archived examples under `old/python/` to identify component-to-pin mappings and demonstrated capabilities.
+- Consult the V4.1.1 board designs and the retained setup and hardware documentation when verifying component mappings and capabilities.
 - The board specification must explain the visual layout of the eBadge: button locations, screen location, and empty/exposed headers. Use the V4.1.1 board photos and design materials as evidence. Distinguish confirmed facts from anything that remains uncertain.
-- Preserve the existing `hardware/ebadge` materials as reference/course examples unless a task explicitly asks to change them. The archived examples in `old/python/` are reference material only.
 
 ## Python standards and examples
 
 - Define practical Python best practices in `specifications/` for new project code, especially `byui_ebadge.py`: readable names, small focused functions, useful docstrings, clear errors, and MicroPython compatibility.
-- Apply those standards to newly developed project code. Files in `board/` are upstream designs and samples, and files in `old/python/` are archived course samples; do not reformat or otherwise impose project Python standards on them.
+- Apply those standards to newly developed project code. Files in `assets/board/` are upstream designs and samples; do not reformat or otherwise impose project Python standards on them.
 - Keep the user-facing API approachable and hide pin-level details when a simple helper can safely express the action.
 - Keep example programs separate from implementation modules so users can adapt programs without changing the shared library. Identify a stable revision when reproducibility matters and provide an offline copy when connectivity is uncertain.
 

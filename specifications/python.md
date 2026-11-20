@@ -2,7 +2,7 @@
 
 ## Scope
 
-These standards apply to new project Python code, especially the user-facing `byui_ebadge.py` module and its supporting project code. They do not apply to archived samples in `old/python/` or upstream design files kept in `board/`; those files are reference examples and should be preserved as such.
+These standards apply to new project Python code, especially the user-facing `byui_ebadge.py` module and its supporting project code. They do not apply to upstream design files kept in `assets/board/`; those files are reference material and should be preserved as such.
 
 The software targets MicroPython on the ESP32-S3 eBadge. Keep the public interface approachable for learners who know Python functions but do not know electronics APIs.
 

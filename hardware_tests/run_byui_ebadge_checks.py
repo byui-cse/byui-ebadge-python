@@ -213,13 +213,28 @@ def _check_pwm():
 
 
 def _check_adc():
-    print("Connect a known 1.5 V source to GPIO13 and its negative to board GND.")
+    print("Connect a known voltage source to GPIO13 and its negative to board GND.")
     print("The ADC measurement range is approximately 0.15–2.45 V; GPIO max is 3.3 V.")
     print("ADC2 reads require Wi-Fi to be inactive. Do not connect an unknown source.")
+    source_text = input(
+        "Enter the source voltage measured with a meter (V), or blank to skip: "
+    ).strip()
+    if not source_text:
+        raise _SkipCheck("known source voltage was not provided")
+    try:
+        source_voltage = float(source_text)
+    except ValueError:
+        raise ValueError("source voltage must be a number in volts")
+    if not 0.15 <= source_voltage <= 2.45:
+        raise ValueError("source voltage must be within the 0.15–2.45 V ADC range")
+
     input("After checking the source and common ground, press Enter to measure. ")
     byui_ebadge.configure_pin(byui_ebadge.GPIO13, mode="input")
     measured = byui_ebadge.read_voltage(byui_ebadge.GPIO13)
-    print("GPIO13 voltage: {:.3f} V".format(measured))
+    difference = measured - source_voltage
+    print("Source meter voltage: {:.3f} V".format(source_voltage))
+    print("GPIO13 reported voltage: {:.3f} V".format(measured))
+    print("Reported minus source: {:+.3f} V".format(difference))
     input("Compare with your source or meter, then press Enter to record the result. ")
 
 
@@ -235,9 +250,22 @@ def _check_accelerometer():
 def _check_battery_voltage():
     print("This reading requires the VMain-to-IO12 jumper bridge.")
     print("It is an uncalibrated estimate of the selected power rail, not battery charge.")
+    meter_text = input(
+        "Optional meter voltage for the same selected rail (V; blank if unavailable): "
+    ).strip()
+    meter_voltage = None
+    if meter_text:
+        try:
+            meter_voltage = float(meter_text)
+        except ValueError:
+            raise ValueError("meter voltage must be a number in volts")
+
     input("If the jumper is installed and Wi-Fi is off, press Enter to read. ")
     voltage = byui_ebadge.read_battery_voltage()
     print("Estimated selected-rail voltage: {:.3f} V".format(voltage))
+    if meter_voltage is not None:
+        print("Meter voltage: {:.3f} V".format(meter_voltage))
+        print("Estimate minus meter: {:+.3f} V".format(voltage - meter_voltage))
     input("Compare with a meter if available, then press Enter to record. ")
 
 

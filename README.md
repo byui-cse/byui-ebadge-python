@@ -112,8 +112,8 @@ and components; the back includes a printed quick reference for GPIOs and buses.
 | `projects/` | Workspace for programs you create, especially in your own fork. |
 | `simulator.py` | Runs an example or project program locally with the terminal simulator. |
 | `resize_image.py` | Host utility that prepares one image or a directory tree of 24-bit BMPs for the badge display. |
-| `assets/byui-cse.png` | Logo asset used by the display example. |
-| `assets/byui-cse_badge.bmp` | Prepared 320 × 115 logo image used by the display example. |
+| `assets/lego-python.png` | Source image used by the display example. |
+| `assets/lego-python_badge.bmp` | Prepared BMP image used by the display example. |
 
 The current board target is V4.1.1. The hardware specification documents the
 board design, production netlist, and physical layout. Firmware-dependent behavior and ADC calibration are called out where
@@ -289,7 +289,7 @@ maintained examples.
 1. Light the RGB LED while button A is held.
 2. Scan for and list nearby Wi-Fi networks.
 3. Play a tone when button A is pressed.
-4. Display the BYU-Idaho CSE logo from `assets/byui-cse.png`.
+4. Display the LEGO Python image from `assets/lego-python.png`.
 5. Draw pixels, lines, and outlined and filled rectangles.
 6. Cycle through prepared photos in a directory.
 7. Play Snake with the directional buttons.
@@ -370,10 +370,10 @@ host utility. Install Pillow if it is not already available:
 
 ```sh
 python -m pip install pillow
-python resize_image.py assets/byui-cse.png
+python resize_image.py assets/lego-python.png
 ```
 
-This creates `assets/byui-cse_badge.bmp`, an uncompressed 24-bit BMP resized to fit
+This creates `assets/lego-python_badge.bmp`, an uncompressed 24-bit BMP resized to fit
 the 320 × 240 display while preserving the source aspect ratio. Small source
 images are not enlarged.
 
@@ -443,10 +443,13 @@ name. Press **Ctrl-C** to interrupt a running program; press **Ctrl-]** to
 leave the REPL. Programs that define a `main()` function can also be imported
 by module name and started with `module_name.main()`.
 
-To deploy the logo example and its prepared image in one command:
+Prepare the image first, then deploy example 04, the library, and the BMP in one
+command. By default, `deploy.py` saves the selected program as `/main.py`, so it
+runs automatically when the badge starts:
 
 ```sh
-python deploy.py --install-library --asset assets/byui-cse_badge.bmp examples/04_display_logo.py
+python resize_image.py assets/lego-python.png
+python deploy.py --install-library --asset assets/lego-python_badge.bmp examples/04_display_logo.py
 ```
 
 Use `--asset FILE` to copy another resource to the badge's root directory;

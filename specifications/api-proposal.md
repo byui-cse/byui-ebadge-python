@@ -1,4 +1,4 @@
-# Draft `pybadge.py` public API for review
+# Draft `byui_ebadge.py` public API for review
 
 **Status: user-reviewed; implementation in progress.** Agreed decisions are
 recorded below. Advanced Wi-Fi result fields and exact test-helper names still
@@ -9,16 +9,16 @@ need implementation-level choices.
 Proposed startup:
 
 ```python
-import pybadge
+import byui_ebadge
 
-pybadge.initialize()                  # hardware on the badge; simulator on a computer
-pybadge.initialize(mode="test")       # deterministic, headless test backend
+byui_ebadge.initialize()                  # hardware on the badge; simulator on a computer
+byui_ebadge.initialize(mode="test")       # deterministic, headless test backend
 ```
 
 **Agreed:** mode names are `"hardware"`, `"simulator"`, and `"test"`, with
 `"auto"` as the default. Auto selects hardware on an eBadge and the interactive
 simulator on a computer; tests explicitly select `mode="test"`. Importing
-`pybadge` alone should not initialize a radio, draw a terminal interface, or
+`byui_ebadge` alone should not initialize a radio, draw a terminal interface, or
 touch hardware. `shutdown()` should put owned outputs and services into a safe
 inactive state. The simulator is a focused approximation for buttons, screen,
 LEDs, and buzzer, not a complete electrical or wireless model. Its blue board
@@ -68,17 +68,17 @@ GPIO13 = 13
 GPIO14 = 14
 # ...through GPIO18
 
-pybadge.configure_pin(pybadge.GPIO13, mode="input")
-pybadge.configure_pin(pybadge.GPIO14, mode="output")
-pybadge.write_pin(pybadge.GPIO14, HIGH)
-level = pybadge.read_pin(pybadge.GPIO13)  # digital input: HIGH or LOW
-if pybadge.is_high(pybadge.GPIO13):
+byui_ebadge.configure_pin(byui_ebadge.GPIO13, mode="input")
+byui_ebadge.configure_pin(byui_ebadge.GPIO14, mode="output")
+byui_ebadge.write_pin(byui_ebadge.GPIO14, HIGH)
+level = byui_ebadge.read_pin(byui_ebadge.GPIO13)  # digital input: HIGH or LOW
+if byui_ebadge.is_high(byui_ebadge.GPIO13):
     ...
-if pybadge.is_low(pybadge.GPIO13):
+if byui_ebadge.is_low(byui_ebadge.GPIO13):
     ...
-volts = pybadge.read_voltage(pybadge.GPIO13)  # voltage, in volts
-pybadge.set_pwm(pybadge.GPIO14, frequency_hz=1000, duty_percent=50)
-pybadge.stop_pwm(pybadge.GPIO14)
+volts = byui_ebadge.read_voltage(byui_ebadge.GPIO13)  # voltage, in volts
+byui_ebadge.set_pwm(byui_ebadge.GPIO14, frequency_hz=1000, duty_percent=50)
+byui_ebadge.stop_pwm(byui_ebadge.GPIO14)
 ```
 
 Proposed PWM docstring wording:
@@ -118,12 +118,12 @@ The test mode needs deterministic inputs and observable outputs. One option is
 to expose a test backend/factory through a separate testing module, for example:
 
 ```python
-from pybadge.testing import make_backend
+from byui_ebadge.testing import make_backend
 
 backend = make_backend()
-pybadge.initialize(mode="test", backend=backend)
-backend.press_button(pybadge.BUTTON_A)
-assert pybadge.is_pressed(pybadge.BUTTON_A)
+byui_ebadge.initialize(mode="test", backend=backend)
+backend.press_button(byui_ebadge.BUTTON_A)
+assert byui_ebadge.is_pressed(byui_ebadge.BUTTON_A)
 ```
 
 **Agreed:** support both a pytest fixture and a context manager if they can

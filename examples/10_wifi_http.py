@@ -5,7 +5,7 @@ with your network details and HTTP endpoints. The GET URL should return a file;
 the POST URL should accept JSON. The badge needs ``urequests`` or ``requests``.
 """
 
-import pybadge
+import byui_ebadge
 
 
 WIFI_SSID = "your-wifi-name"
@@ -16,19 +16,19 @@ DOWNLOAD_PATH = "download.bin"
 
 
 def main():
-    pybadge.initialize(mode="hardware")
+    byui_ebadge.initialize(mode="hardware")
     try:
         print("Connecting to Wi-Fi...")
-        if not pybadge.connect_wifi(WIFI_SSID, WIFI_PASSWORD):
+        if not byui_ebadge.connect_wifi(WIFI_SSID, WIFI_PASSWORD):
             print("Could not connect to Wi-Fi.")
             return
 
         print("Connected. Downloading {}...".format(DOWNLOAD_URL))
-        saved_path = pybadge.download_url(DOWNLOAD_URL, filename=DOWNLOAD_PATH)
+        saved_path = byui_ebadge.download_url(DOWNLOAD_URL, filename=DOWNLOAD_PATH)
         print("Saved download to {}.".format(saved_path))
 
         print("Sending JSON to {}...".format(POST_URL))
-        response = pybadge.post_url(
+        response = byui_ebadge.post_url(
             POST_URL,
             json={"message": "Hello from the eBadge"},
         )
@@ -36,8 +36,8 @@ def main():
     except (OSError, RuntimeError) as error:
         print("Wi-Fi or HTTP request failed: {}".format(error))
     finally:
-        pybadge.disconnect_wifi()
-        pybadge.shutdown()
+        byui_ebadge.disconnect_wifi()
+        byui_ebadge.shutdown()
 
 
 if __name__ == "__main__":

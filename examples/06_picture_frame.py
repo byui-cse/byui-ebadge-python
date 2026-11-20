@@ -6,7 +6,7 @@ Prepare photos with ``resize_image.py photos/`` and deploy the resulting
 
 import os
 
-import pybadge
+import byui_ebadge
 
 
 PHOTO_DIRECTORY = "photos_badge"
@@ -26,7 +26,7 @@ def list_photos(directory):
 
 def main():
     """Display each photo in a repeating slideshow."""
-    pybadge.initialize()
+    byui_ebadge.initialize()
     try:
         photos = list_photos(PHOTO_DIRECTORY)
         if not photos:
@@ -36,12 +36,12 @@ def main():
 
         while True:
             for photo in photos:
-                pybadge.display_image(photo)
-                pybadge.pause(DISPLAY_DURATION_MS)
+                byui_ebadge.display_image(photo)
+                byui_ebadge.pause(DISPLAY_DURATION_MS)
     except KeyboardInterrupt:
         pass
     finally:
-        pybadge.shutdown()
+        byui_ebadge.shutdown()
 
 
 if __name__ == "__main__":

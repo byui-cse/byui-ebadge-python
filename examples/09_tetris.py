@@ -2,7 +2,7 @@
 
 import random
 
-import pybadge
+import byui_ebadge
 
 
 GRID_WIDTH = 10
@@ -15,13 +15,13 @@ GRAVITY_FRAMES = 25
 MOVE_REPEAT_FRAMES = 6
 
 COLORS = (
-    pybadge.CYAN,
-    pybadge.YELLOW,
-    pybadge.MAGENTA,
-    pybadge.GREEN,
-    pybadge.RED,
-    pybadge.BLUE,
-    pybadge.ORANGE,
+    byui_ebadge.CYAN,
+    byui_ebadge.YELLOW,
+    byui_ebadge.MAGENTA,
+    byui_ebadge.GREEN,
+    byui_ebadge.RED,
+    byui_ebadge.BLUE,
+    byui_ebadge.ORANGE,
 )
 
 # Each shape uses four rows of four cells. Rotations are calculated as needed.
@@ -81,7 +81,7 @@ def collides(grid, piece, offset_x=0, offset_y=0, rotation=None):
 
 def draw_block(x, y, color):
     """Draw one Tetris block with a small black gap around it."""
-    pybadge.draw_rectangle(
+    byui_ebadge.draw_rectangle(
         GRID_X + x * CELL_SIZE,
         GRID_Y + y * CELL_SIZE,
         CELL_SIZE - 1,
@@ -93,13 +93,13 @@ def draw_block(x, y, color):
 
 def draw_game(grid, piece, score, paused=False):
     """Draw the settled grid, active piece, and game information."""
-    pybadge.display_clear(pybadge.BLACK)
-    pybadge.draw_rectangle(
+    byui_ebadge.display_clear(byui_ebadge.BLACK)
+    byui_ebadge.draw_rectangle(
         GRID_X - 2,
         GRID_Y - 2,
         GRID_WIDTH * CELL_SIZE + 3,
         GRID_HEIGHT * CELL_SIZE + 3,
-        pybadge.WHITE,
+        byui_ebadge.WHITE,
     )
     for y in range(GRID_HEIGHT):
         for x in range(GRID_WIDTH):
@@ -116,17 +116,17 @@ def draw_game(grid, piece, score, paused=False):
                 if shape[shape_y][shape_x] and 0 <= y < GRID_HEIGHT:
                     draw_block(x, y, COLORS[piece["kind"]])
 
-    pybadge.display_text("TETRIS", x=180, y=20, color=pybadge.CYAN)
-    pybadge.display_text("Score {}".format(score), x=180, y=48)
-    pybadge.display_text("Left/Right: move", x=180, y=82)
-    pybadge.display_text("Up: rotate", x=180, y=102)
-    pybadge.display_text("Down: drop", x=180, y=122)
-    pybadge.display_text("A: pause", x=180, y=142)
-    pybadge.display_text("B: new game", x=180, y=162)
+    byui_ebadge.display_text("TETRIS", x=180, y=20, color=byui_ebadge.CYAN)
+    byui_ebadge.display_text("Score {}".format(score), x=180, y=48)
+    byui_ebadge.display_text("Left/Right: move", x=180, y=82)
+    byui_ebadge.display_text("Up: rotate", x=180, y=102)
+    byui_ebadge.display_text("Down: drop", x=180, y=122)
+    byui_ebadge.display_text("A: pause", x=180, y=142)
+    byui_ebadge.display_text("B: new game", x=180, y=162)
     if paused:
-        pybadge.draw_rectangle(77, 96, 166, 42, pybadge.BLACK, filled=True)
-        pybadge.draw_rectangle(76, 95, 168, 44, pybadge.WHITE)
-        pybadge.display_text("PAUSED", x=126, y=110, color=pybadge.YELLOW)
+        byui_ebadge.draw_rectangle(77, 96, 166, 42, byui_ebadge.BLACK, filled=True)
+        byui_ebadge.draw_rectangle(76, 95, 168, 44, byui_ebadge.WHITE)
+        byui_ebadge.display_text("PAUSED", x=126, y=110, color=byui_ebadge.YELLOW)
 
 
 def new_piece():
@@ -168,9 +168,9 @@ def play_game():
     draw_game(grid, piece, score)
 
     while not collides(grid, piece):
-        a_pressed = pybadge.is_pressed(pybadge.BUTTON_A)
-        b_pressed = pybadge.is_pressed(pybadge.BUTTON_B)
-        up_pressed = pybadge.is_pressed(pybadge.BUTTON_UP)
+        a_pressed = byui_ebadge.is_pressed(byui_ebadge.BUTTON_A)
+        b_pressed = byui_ebadge.is_pressed(byui_ebadge.BUTTON_B)
+        up_pressed = byui_ebadge.is_pressed(byui_ebadge.BUTTON_UP)
 
         if b_pressed and not previous_b:
             return
@@ -184,13 +184,13 @@ def play_game():
             if move_cooldown > 0:
                 move_cooldown -= 1
             if move_cooldown == 0:
-                if pybadge.is_pressed(pybadge.BUTTON_LEFT) and not collides(
+                if byui_ebadge.is_pressed(byui_ebadge.BUTTON_LEFT) and not collides(
                     grid, piece, offset_x=-1
                 ):
                     piece["x"] -= 1
                     changed = True
                     move_cooldown = MOVE_REPEAT_FRAMES
-                elif pybadge.is_pressed(pybadge.BUTTON_RIGHT) and not collides(
+                elif byui_ebadge.is_pressed(byui_ebadge.BUTTON_RIGHT) and not collides(
                     grid, piece, offset_x=1
                 ):
                     piece["x"] += 1
@@ -203,7 +203,7 @@ def play_game():
                     piece["rotation"] = rotation
                     changed = True
 
-            gravity = 3 if pybadge.is_pressed(pybadge.BUTTON_DOWN) else GRAVITY_FRAMES
+            gravity = 3 if byui_ebadge.is_pressed(byui_ebadge.BUTTON_DOWN) else GRAVITY_FRAMES
             if frame % gravity == 0:
                 if not collides(grid, piece, offset_y=1):
                     piece["y"] += 1
@@ -221,27 +221,27 @@ def play_game():
         elif paused and frame % 10 == 0:
             draw_game(grid, piece, score, paused)
         frame += 1
-        pybadge.pause(FRAME_MS)
+        byui_ebadge.pause(FRAME_MS)
 
     draw_game(grid, None, score)
-    pybadge.display_text("GAME OVER", x=180, y=196, color=pybadge.RED)
-    pybadge.display_text("B: new game", x=180, y=216)
-    while not pybadge.is_pressed(pybadge.BUTTON_B):
-        pybadge.pause(30)
-    while pybadge.is_pressed(pybadge.BUTTON_B):
-        pybadge.pause(30)
+    byui_ebadge.display_text("GAME OVER", x=180, y=196, color=byui_ebadge.RED)
+    byui_ebadge.display_text("B: new game", x=180, y=216)
+    while not byui_ebadge.is_pressed(byui_ebadge.BUTTON_B):
+        byui_ebadge.pause(30)
+    while byui_ebadge.is_pressed(byui_ebadge.BUTTON_B):
+        byui_ebadge.pause(30)
 
 
 def main():
     """Initialize the board and repeat Tetris games until interrupted."""
-    pybadge.initialize()
+    byui_ebadge.initialize()
     try:
         while True:
             play_game()
     except KeyboardInterrupt:
         pass
     finally:
-        pybadge.shutdown()
+        byui_ebadge.shutdown()
 
 
 if __name__ == "__main__":

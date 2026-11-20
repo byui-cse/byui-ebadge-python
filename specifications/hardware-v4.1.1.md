@@ -2,7 +2,7 @@
 
 ## Scope and evidence
 
-This document is the merged hardware reference for the `pybadge.py` interface and targets board revision V4.1.1. It combines the archived MicroPython samples, the new [board_info_v4_1.md](board_info_v4_1.md) notes, and the upstream V4.1.1 CAD/BOM/netlist under `board/hardware v4.1.1/badge-esp32-s3/` (the upstream directory name contains spaces). Arduino setup instructions remain in `board_info_v4_1.md`; this file focuses on board facts and implications for the beginner-facing Python API.
+This document is the merged hardware reference for the `byui_ebadge.py` interface and targets board revision V4.1.1. It combines the archived MicroPython samples, the new [board_info_v4_1.md](board_info_v4_1.md) notes, and the upstream V4.1.1 CAD/BOM/netlist under `board/hardware v4.1.1/badge-esp32-s3/` (the upstream directory name contains spaces). Arduino setup instructions remain in `board_info_v4_1.md`; this file focuses on board facts and implications for the beginner-facing Python API.
 
 The V4.1.1 [front](../byui-ebadge-front-4_1_1.jpg) and [back](../byui-ebadge-back-4_1_1.jpg) photos show the physical board and its silkscreen pin reference. Use these for revision-specific visual details.
 
@@ -78,7 +78,7 @@ Restore the standard link positions before using that helper again.
 
 **GPIO 12 and battery sense:** The V4 MicroPython driver assigns GPIO12 as TFT MISO, while the V4.1.1 display schematic does not require a MISO connection for normal writes. The V4.1.1 production netlist shows GPIO12 at the GPIO header separately from `BATTERYVOLTAGE`; the battery sense node is a distinct jumperable signal. `board_info_v4_1.md` describes linking `VMain` to `IO12`. Treat this as a selectable jumper route, not a permanently shared net, and do not use display reads and battery measurement simultaneously if both are routed to GPIO12.
 
-**SD card:** The V4.1.1 netlist confirms the onboard card socket uses GPIO37 (MISO), GPIO38 (clock), GPIO39 (MOSI), and GPIO40 (chip select). These signals are board-wired; GPIO40 is not available as an external chip-select. The archived MicroPython code only has generic SD initialization and does not demonstrate a verified V4.1.1 mount workflow, so SD is a hardware capability but still requires firmware/API validation before adding a public `pybadge.py` helper.
+**SD card:** The V4.1.1 netlist confirms the onboard card socket uses GPIO37 (MISO), GPIO38 (clock), GPIO39 (MOSI), and GPIO40 (chip select). These signals are board-wired; GPIO40 is not available as an external chip-select. The archived MicroPython code only has generic SD initialization and does not demonstrate a verified V4.1.1 mount workflow, so SD is a hardware capability but still requires firmware/API validation before adding a public `byui_ebadge.py` helper.
 
 ## Physical layout and silkscreen (V4.1.1 photos)
 
@@ -140,7 +140,7 @@ schematic and production netlist for electrical connectivity and jumper routing.
 ### Additional V4.1.1 capabilities and API candidates
 
 The new board notes and archived code reveal several useful capabilities beyond
-the first `pybadge.py` API scope:
+the first `byui_ebadge.py` API scope:
 
 - **Battery/power measurement:** `BATTERYVOLTAGE` is a separate jumperable
   signal. The V4.1.1 design notes identify a 150 kΩ / 10 kΩ divider from
@@ -164,7 +164,7 @@ the first `pybadge.py` API scope:
   device addresses with strongest RSSI; it does not decode advertised names.
 - **USB host:** the native USB-C port has dual-role hardware, and the added
   Arduino notes include keyboard/mouse host demos. The archived examples mark
-  USB host as Arduino-only. Do not promise it from `pybadge.py` until the target
+  USB host as Arduino-only. Do not promise it from `byui_ebadge.py` until the target
   MicroPython build and host library support it.
 - **Expansion:** GPIO13–GPIO18 can support PWM, digital I/O, ADC where the MCU
   and board routing permit, and external actuators such as servos. Existing
@@ -194,7 +194,7 @@ the first `pybadge.py` API scope:
 - `board/hardware v4.1.1/badge-esp32-s3/`: authoritative target-revision layout and schematics in the upstream e-badge repository. The upstream directory name contains spaces.
 - `board/hardware v4.1.1/badge-esp32-s3/production/bom.csv`: revision-specific component list. It confirms 24 SK6805 addressable LEDs and an MMA8452 accelerometer.
 - `board/hardware v4.1.1/badge-esp32-s3/production/netlist.ipc`: physical V4.1.1 net assignments, including the SD socket, GPIO header, accelerometer, and battery-sense nets.
-- [`board_info_v4_1.md`](board_info_v4_1.md): broader Arduino IDE guide and V4.1 feature notes; use this hardware spec for the consolidated `pybadge.py`-oriented reference.
+- [`board_info_v4_1.md`](board_info_v4_1.md): broader Arduino IDE guide and V4.1 feature notes; use this hardware spec for the consolidated `byui_ebadge.py`-oriented reference.
 - `old/code_for_board_v4_1/code_for_board_v4_1/vmain/vmain.py`: V4.1 MicroPython battery/power-sense example; its ADC voltage scale is an estimate and needs calibration.
 - `old/code_for_board_v4_1/code_for_board_v4_1/servo/servo.py`: GPIO13 PWM servo sweep example.
 - `old/code_for_board_v4_1/code_for_board_v4_1/serial/serial.py`: USB-UART stdin/stdout echo example.

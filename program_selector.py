@@ -6,7 +6,7 @@ Deploy this file as ``main.py`` and copy the programs to the badge with
 
 import os
 
-import pybadge
+import byui_ebadge
 
 
 VISIBLE_PROGRAMS = 10
@@ -14,7 +14,7 @@ SKIP_FILES = (
     "boot.py",
     "main.py",
     "program_selector.py",
-    "pybadge.py",
+    "byui_ebadge.py",
 )
 
 
@@ -38,23 +38,23 @@ def visible_start(selected, program_count):
 
 def draw_menu(programs, selected):
     """Draw the current program selection menu."""
-    pybadge.display_clear(pybadge.BLACK)
-    pybadge.display_text("Choose a program", x=8, y=8, color=pybadge.CYAN)
-    pybadge.display_text("Up/Down select; A run", x=8, y=26)
+    byui_ebadge.display_clear(byui_ebadge.BLACK)
+    byui_ebadge.display_text("Choose a program", x=8, y=8, color=byui_ebadge.CYAN)
+    byui_ebadge.display_text("Up/Down select; A run", x=8, y=26)
     if not programs:
-        pybadge.display_text("No programs found", x=8, y=58, color=pybadge.YELLOW)
-        pybadge.display_text("Copy .py files to badge", x=8, y=78)
+        byui_ebadge.display_text("No programs found", x=8, y=58, color=byui_ebadge.YELLOW)
+        byui_ebadge.display_text("Copy .py files to badge", x=8, y=78)
         return
 
     start = visible_start(selected, len(programs))
     end = min(start + VISIBLE_PROGRAMS, len(programs))
     for index in range(start, end):
         prefix = "> " if index == selected else "  "
-        pybadge.display_text(
+        byui_ebadge.display_text(
             prefix + programs[index],
             x=8,
             y=50 + (index - start) * 18,
-            color=pybadge.GREEN if index == selected else pybadge.WHITE,
+            color=byui_ebadge.GREEN if index == selected else byui_ebadge.WHITE,
         )
 
 
@@ -69,7 +69,7 @@ def run_program(filename):
 
 def main():
     """Show a button-controlled program list and run the selected file."""
-    pybadge.initialize()
+    byui_ebadge.initialize()
     programs = list_programs()
     selected = 0
     previous_up = False
@@ -79,9 +79,9 @@ def main():
 
     try:
         while True:
-            up = pybadge.is_pressed(pybadge.BUTTON_UP)
-            down = pybadge.is_pressed(pybadge.BUTTON_DOWN)
-            button_a = pybadge.is_pressed(pybadge.BUTTON_A)
+            up = byui_ebadge.is_pressed(byui_ebadge.BUTTON_UP)
+            down = byui_ebadge.is_pressed(byui_ebadge.BUTTON_DOWN)
+            button_a = byui_ebadge.is_pressed(byui_ebadge.BUTTON_A)
 
             changed = False
             if programs and up and not previous_up:
@@ -105,12 +105,12 @@ def main():
                     print("Program error:", error)
                     error_message = str(error)
 
-                pybadge.initialize()
+                byui_ebadge.initialize()
                 if error_message is not None:
-                    pybadge.display_clear(pybadge.BLACK)
-                    pybadge.display_text("Program error", x=8, y=8, color=pybadge.RED)
-                    pybadge.display_text(error_message[:35], x=8, y=30)
-                    pybadge.pause(1500)
+                    byui_ebadge.display_clear(byui_ebadge.BLACK)
+                    byui_ebadge.display_text("Program error", x=8, y=8, color=byui_ebadge.RED)
+                    byui_ebadge.display_text(error_message[:35], x=8, y=30)
+                    byui_ebadge.pause(1500)
                 programs = list_programs()
                 if selected >= len(programs):
                     selected = max(0, len(programs) - 1)
@@ -119,11 +119,11 @@ def main():
             previous_up = up
             previous_down = down
             previous_a = button_a
-            pybadge.pause(30)
+            byui_ebadge.pause(30)
     except KeyboardInterrupt:
         pass
     finally:
-        pybadge.shutdown()
+        byui_ebadge.shutdown()
 
 
 if __name__ == "__main__":

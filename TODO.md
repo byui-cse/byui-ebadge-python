@@ -9,17 +9,17 @@
 
 ## Project structure and documentation
 
-- [x] Evaluate the user-facing repository workflow: compare packaging `pybadge` for installation with pip against having users fork the repository and add programs under `examples/`. Document pros, cons, and a recommendation, considering setup effort, offline use, version updates, local edits, sharing, and maintenance.
+- [x] Evaluate the user-facing repository workflow: compare packaging `byui_ebadge` for installation with pip against having users fork the repository and add programs under `examples/`. Document pros, cons, and a recommendation, considering setup effort, offline use, version updates, local edits, sharing, and maintenance.
 - [x] Create the top-level README with the repository map, usage instructions, current V4.1.1 board photos, and MicroPython installation steps adapted from `hardware/ebadge/README.md`.
 - [x] Add the BYU-I eBadge repository (`git@github.com:BYU-I-eBadge/e-badge.git`) as a Git submodule under `board/`.
 - [x] Create `mpremote` copy commands for the hardware backend dependencies and user programs, including device filenames and paths. Physical badge deployment remains to be validated after the backend's uncalibrated features are completed.
 - [x] Review the V4.1.1 hardware design and merge useful findings from `specifications/board_info_v4_1.md` into `specifications/hardware-v4.1.1.md`, including verified pin mappings, SD wiring, jumperable power sensing, wireless capability, and API candidates. Keep firmware-dependent details and ADC calibration clearly qualified.
 - [x] Commit the staged archive move and related documentation changes so the archived source files are recorded in Git history (recorded in the initial project commit, `55be908`).
 
-## `pybadge.py` and runtime modes
+## `byui_ebadge.py` and runtime modes
 
 - [x] Review the public API with the project owner; agreed decisions are recorded in [`specifications/api-proposal.md`](specifications/api-proposal.md).
-- [ ] Implement one stable, beginner-friendly `pybadge.py` API backed by three modes:
+- [ ] Implement one stable, beginner-friendly `byui_ebadge.py` API backed by three modes:
   - [x] Hardware mode: delegate supported operations to maintained, repository-owned MicroPython drivers on the eBadge.
   - [x] Simulator mode: run on a regular computer with a terminal board visual, simple display, and clickable buttons using Textual.
     - [x] Put the BYU-Idaho logo in the blue board artwork as permanent silkscreen-style decoration, separate from the program-controlled simulated screen. Provide a terminal-compatible fallback when image rendering is unavailable.
@@ -38,13 +38,13 @@
 
 ## Tests
 
-- [x] Add `pytest` unit tests for `pybadge.py` using the headless test backend. Cover button state, LED state, tone requests, Wi-Fi results, display operations, and backend selection.
-- [x] Create a guided, interactive hardware test runner for the `pybadge.py` public API. It prompts for button, joystick, LED, display, buzzer, Wi-Fi, GPIO HIGH/LOW, PWM, ADC, accelerometer, and battery/power checks; records pass/fail/skip and supports retry.
-- [x] Add an interactive hardware test program for `HardwareBackend`, independently of `pybadge.py`, covering the same physical components where practical.
+- [x] Add `pytest` unit tests for `byui_ebadge.py` using the headless test backend. Cover button state, LED state, tone requests, Wi-Fi results, display operations, and backend selection.
+- [x] Create a guided, interactive hardware test runner for the `byui_ebadge.py` public API. It prompts for button, joystick, LED, display, buzzer, Wi-Fi, GPIO HIGH/LOW, PWM, ADC, accelerometer, and battery/power checks; records pass/fail/skip and supports retry.
+- [x] Add an interactive hardware test program for `HardwareBackend`, independently of `byui_ebadge.py`, covering the same physical components where practical.
 - [x] Include accelerometer and battery-voltage checks in headless and interactive hardware validation. These are not required in the focused terminal simulator.
 - [x] Document how to run automated tests on a computer and how to run/interpret the interactive checks on the physical badge.
 - [x] Have a human upload and run `hardware_tests/run_hardware_backend_checks.py` on a physical V4.1.1 badge. Reported: PASS for A/B/up/down/left/right buttons, RGB indicator, addressable LED strip, buzzer, display, Wi-Fi scan, GPIO HIGH/LOW loopback, GPIO PWM, ADC voltage, accelerometer, and battery/selected-rail voltage; joystick was skipped pending calibration.
-- [ ] Have a human upload and run `hardware_tests/run_pybadge_checks.py` on a physical V4.1.1 badge; record the results and investigate any failures.
+- [ ] Have a human upload and run `hardware_tests/run_byui_ebadge_checks.py` on a physical V4.1.1 badge; record the results and investigate any failures.
 
 ## Example programs
 
@@ -56,7 +56,8 @@
 
 ## Additional requested work
 
-- [ ] Review and rename the GitHub repository and Python import/package name; choose a concise name that follows common Python package naming conventions, then update repository links and documentation.
+- [x] Rename the Python module/import to `byui_ebadge.py` / `byui_ebadge` and update maintained code and documentation.
+- [ ] Rename the GitHub repository to `byui-ebadge` and update repository links after the repository move is coordinated.
 - [x] Extend `deploy.py` to upload a complete local directory tree, including resources such as a directory of photos, while preserving its directory structure on the badge.
 - [x] Clean up README deployment commands to use mpremote port auto-detection by default and explain that `--port <PORT>` is optional when automatic selection works.
 - [x] Add a digital picture-frame example that cycles through image files in a directory.
@@ -66,7 +67,7 @@
   - [x] Port Tetris using the D-pad and current public drawing helpers (`examples/09_tetris.py`).
 - [x] Create a program selector that lets a user choose which installed program to run (`program_selector.py`). Deploy it as `main.py`; it returns to the menu after a selected program finishes or is interrupted.
 - [x] Investigate USB keyboard support: V4.1.1 has native USB-host hardware, but the archived board note says keyboard host mode is Arduino-only and the supplied MicroPython 1.29.0 generic ESP32-S3 firmware has no USB-host HID API. A keyboard terminal would need custom firmware or a native host driver; it is not supported by the current Python target. See [`hardware-v4.1.1.md`](specifications/hardware-v4.1.1.md).
-- [x] Expand Wi-Fi support in `pybadge.py`. Use MicroPython's built-in `network` module instead of adding a separate Wi-Fi dependency; add an on-screen network and password flow plus dictionary and display helpers for connection details.
+- [x] Expand Wi-Fi support in `byui_ebadge.py`. Use MicroPython's built-in `network` module instead of adding a separate Wi-Fi dependency; add an on-screen network and password flow plus dictionary and display helpers for connection details.
   - [ ] Validate the on-screen setup flow and connected SSID, RSSI, and IP reporting on physical V4.1.1 hardware.
 - [x] Add a README tutorial explaining how to build a program, detect pressed buttons, control the board lights, and use the display.
 

@@ -1,25 +1,25 @@
 """Draw basic shapes using the public display helpers."""
 
-import pybadge
+import byui_ebadge
 
 
 def main():
     """Show pixels, lines, and outlined and filled rectangles."""
-    pybadge.initialize()
+    byui_ebadge.initialize()
     try:
-        pybadge.display_clear(pybadge.BLACK)
-        pybadge.display_text("Display shapes", x=8, y=8)
-        pybadge.draw_pixel(20, 40, pybadge.RED)
-        pybadge.draw_line(35, 40, 110, 40, pybadge.BLUE)
-        pybadge.draw_rectangle(20, 60, 90, 50, pybadge.GREEN)
-        pybadge.draw_rectangle(130, 60, 90, 50, pybadge.YELLOW, filled=True)
+        byui_ebadge.display_clear(byui_ebadge.BLACK)
+        byui_ebadge.display_text("Display shapes", x=8, y=8)
+        byui_ebadge.draw_pixel(20, 40, byui_ebadge.RED)
+        byui_ebadge.draw_line(35, 40, 110, 40, byui_ebadge.BLUE)
+        byui_ebadge.draw_rectangle(20, 60, 90, 50, byui_ebadge.GREEN)
+        byui_ebadge.draw_rectangle(130, 60, 90, 50, byui_ebadge.YELLOW, filled=True)
         print("Drawing is complete. Press Ctrl-C to stop.")
         while True:
-            pybadge.pause(1000)
+            byui_ebadge.pause(1000)
     except KeyboardInterrupt:
         pass
     finally:
-        pybadge.shutdown()
+        byui_ebadge.shutdown()
 
 
 if __name__ == "__main__":

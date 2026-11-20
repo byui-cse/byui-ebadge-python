@@ -1,26 +1,26 @@
 """Play one short tone each time button A is pressed.
 
-Run from the repository root after `pybadge.py` is implemented.
+Run from the repository root after `byui_ebadge.py` is implemented.
 """
 
-import pybadge
+import byui_ebadge
 
 
 def main():
-    pybadge.initialize()
-    pybadge.display_clear()
-    pybadge.display_text("Press A to play a note", x=8, y=8)
+    byui_ebadge.initialize()
+    byui_ebadge.display_clear()
+    byui_ebadge.display_text("Press A to play a note", x=8, y=8)
     was_pressed = False
 
     try:
         while True:
-            is_pressed = pybadge.is_pressed(pybadge.BUTTON_A)
+            is_pressed = byui_ebadge.is_pressed(byui_ebadge.BUTTON_A)
             if is_pressed and not was_pressed:
-                pybadge.play_tone(440, 180)
+                byui_ebadge.play_tone(440, 180)
             was_pressed = is_pressed
-            pybadge.pause(20)
+            byui_ebadge.pause(20)
     except KeyboardInterrupt:
-        pybadge.stop_tone()
+        byui_ebadge.stop_tone()
 
 
 if __name__ == "__main__":

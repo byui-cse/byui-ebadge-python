@@ -6,7 +6,7 @@ import threading
 import time
 
 from backends.test_backend import TestBackend
-from pybadge import UnsupportedFeatureError
+from byui_ebadge import UnsupportedFeatureError
 
 
 class SimulatorBackend(TestBackend):
@@ -148,7 +148,7 @@ class SimulatorBackend(TestBackend):
         self._app = BadgeApp()
         self._app_thread = threading.Thread(
             target=self._run_app,
-            name="pybadge-terminal-simulator",
+            name="byui_ebadge-terminal-simulator",
             daemon=True,
         )
         atexit.register(self.shutdown)
@@ -166,7 +166,7 @@ class SimulatorBackend(TestBackend):
 
         Textual's Linux driver installs terminal signal handlers when it
         starts. Python only permits signal handlers to be installed by the
-        main thread, while the synchronous pybadge API needs the UI to run
+        main thread, while the synchronous byui_ebadge API needs the UI to run
         alongside the user's program. Skip signal registration requested by
         the UI thread; signal calls from the main thread keep normal behavior.
         """

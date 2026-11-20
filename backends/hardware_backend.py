@@ -1,6 +1,6 @@
 """Direct MicroPython driver for the BYU-Idaho eBadge V4.1.1 hardware."""
 
-from pybadge import UnsupportedFeatureError
+from byui_ebadge import UnsupportedFeatureError
 
 
 class HardwareBackend:

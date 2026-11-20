@@ -2,7 +2,7 @@
 
 ## Options
 
-| Consideration | Install `pybadge` as a package | Fork or clone the repository |
+| Consideration | Install `byui_ebadge` as a package | Fork or clone the repository |
 | --- | --- | --- |
 | Setup effort | A short install command is convenient once packaging and releases are maintained. Programs still need a separate place to be created and stored. | A checkout gives users the library, examples, and documentation together. Git setup is an extra step unless a prepared copy is provided. |
 | Offline use | A first install needs a package source or a preloaded wheel. A pinned wheel can be distributed locally, but adds an artifact and installation step. | A clone needs network access initially. A ZIP or prepared checkout can be distributed for offline use; after that, development needs no network. |
@@ -19,14 +19,14 @@ prepared local checkout in a restricted or offline environment. Keep personal
 programs in `examples/` or a clearly named work directory, separate from
 library internals.
 
-This fits the current project: `pybadge.py` is a single user-facing module, the
+This fits the current project: `byui_ebadge.py` is a single user-facing module, the
 API is still being implemented, and programs benefit from having examples and
 board setup instructions nearby. It also avoids requiring a desktop package
 install followed by a separate transfer of a compatible module to MicroPython.
 
 When the API and packaging are stable, publish versioned releases and, if
 useful, offer a host-side pip package for simulator use. Treat badge deployment
-as a separate step: copy the MicroPython-compatible `pybadge.py` and required
+as a separate step: copy the MicroPython-compatible `byui_ebadge.py` and required
 hardware files to the device. Pin a known release or commit when a repeatable
 environment is needed. Packaging is an optional distribution path, not a
 prerequisite for using or sharing programs.

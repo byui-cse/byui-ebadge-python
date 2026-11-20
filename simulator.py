@@ -5,7 +5,7 @@ Run from the repository root, for example:
     python simulator.py 07_snake
     python simulator.py projects/my_program.py
 
-The child process runs on CPython, where ``pybadge.initialize()`` selects the
+The child process runs on CPython, where ``byui_ebadge.initialize()`` selects the
 interactive simulator automatically.
 """
 

@@ -1,11 +1,11 @@
-# pybadge
+# BYU-I eBadge Python Library
 
-`pybadge` is a beginner-friendly Python interface for BYU-Idaho's ESP32-S3
+`byui_ebadge` is a beginner-friendly Python interface for BYU-Idaho's ESP32-S3
 eBadge. The goal is for any user to write ordinary Python programs that use
 buttons, LEDs, the screen, sound, sensors, and Wi-Fi without dealing with GPIO
 numbers or low-level electronics APIs.
 
-The `pybadge.py` interface supports three modes: the physical eBadge, an
+The `byui_ebadge.py` interface supports three modes: the physical eBadge, an
 interactive terminal simulator, and a headless test backend. The public API
 has been reviewed; remaining work is tracked in [TODO.md](TODO.md) and the
 [specifications](specifications/). Programs in [`examples/`](examples/) show
@@ -73,7 +73,7 @@ and components; the back includes a printed quick reference for GPIOs and buses.
 
 | Path | Purpose |
 | --- | --- |
-| `pybadge.py` | User-facing API shared by all runtime modes. |
+| `byui_ebadge.py` | User-facing API shared by all runtime modes. |
 | `backends/` | Hardware, simulator, and headless test implementations. The maintained `backends/hardware/` package contains the on-device drivers. |
 | `deploy.py` | Host-side helper that uses `mpremote` to copy the library, a program, and optional assets to the badge. |
 | `board/` | eBadge Git submodule and hardware design source (initialize with the submodule command below). |
@@ -122,7 +122,7 @@ percentage from 0 to 100. A duty of `0` keeps the output off; `100` keeps it
 on. For example, this requests a 1,000 Hz signal that is on half of each cycle:
 
 ```python
-pybadge.set_pwm(pybadge.GPIO13, frequency_hz=1000, duty_percent=50)
+byui_ebadge.set_pwm(byui_ebadge.GPIO13, frequency_hz=1000, duty_percent=50)
 ```
 
 The small RGB LED and the addressable LED strip have separate names. The
@@ -132,8 +132,8 @@ agreed API uses `set_rgb_led(color)` for the small indicator and
 update a whole frame in a loop and control the frame delay itself:
 
 ```python
-pybadge.set_led_strip(frame_colors)
-pybadge.pause(80)  # wait 80 milliseconds before the next frame
+byui_ebadge.set_led_strip(frame_colors)
+byui_ebadge.pause(80)  # wait 80 milliseconds before the next frame
 ```
 
 Frame updates and timing are separate; animations do not require a predefined
@@ -242,7 +242,7 @@ python simulator.py projects/my_program.py
 
 The `.py` suffix is optional for names in `examples/` and `projects/`. The
 runner adds the repository and program directories to `PYTHONPATH` and runs
-the program from the repository root. On a computer, `pybadge.initialize()`
+the program from the repository root. On a computer, `byui_ebadge.initialize()`
 automatically selects the simulator. For example, to open the sample screen
 and LED output:
 
@@ -279,7 +279,7 @@ draw, A to change color, B to toggle the eraser, and A+B to clear the canvas.
 Tetris uses left/right to move, up to rotate, down to speed up the drop, A to
 pause, and B to start a new game.
 
-These programs use `pybadge.py`. Some physical hardware behavior still needs
+These programs use `byui_ebadge.py`. Some physical hardware behavior still needs
 validation; see [TODO.md](TODO.md) for remaining work and hardware limitations.
 
 ### Build a simple program
@@ -289,33 +289,33 @@ the library, check a button with `is_pressed()`, and use the display and RGB
 LED helpers:
 
 ```python
-import pybadge
+import byui_ebadge
 
 
 def main():
-    pybadge.initialize()
+    byui_ebadge.initialize()
     last_pressed = None
     try:
-        pybadge.display_clear()
-        pybadge.display_text("Hold A to light blue", x=8, y=8)
+        byui_ebadge.display_clear()
+        byui_ebadge.display_text("Hold A to light blue", x=8, y=8)
         while True:
-            pressed = pybadge.is_pressed(pybadge.BUTTON_A)
+            pressed = byui_ebadge.is_pressed(byui_ebadge.BUTTON_A)
             if pressed:
-                pybadge.set_rgb_led("blue")
+                byui_ebadge.set_rgb_led("blue")
             else:
-                pybadge.turn_rgb_led_off()
+                byui_ebadge.turn_rgb_led_off()
 
             if pressed != last_pressed:
                 message = "Button A is down" if pressed else "Button A is up"
-                pybadge.display_clear()
-                pybadge.display_text(message, x=8, y=8)
+                byui_ebadge.display_clear()
+                byui_ebadge.display_text(message, x=8, y=8)
                 last_pressed = pressed
 
-            pybadge.pause(20)
+            byui_ebadge.pause(20)
     except KeyboardInterrupt:
         pass
     finally:
-        pybadge.shutdown()
+        byui_ebadge.shutdown()
 
 
 if __name__ == "__main__":
@@ -334,7 +334,7 @@ helpers use pixel coordinates with `(0, 0)` at the top-left; `display_text()`
 draws a line of text, and `display_clear()` fills the screen before drawing.
 Use other names such as `BUTTON_B`, `BUTTON_UP`, and `BUTTON_LEFT` to read the
 other buttons. Examples are ordinary Python programs and can be adapted
-without editing `pybadge.py`.
+without editing `byui_ebadge.py`.
 Before running the logo example, prepare the PNG for the display with the
 host utility. Install Pillow if it is not already available:
 
@@ -374,7 +374,7 @@ included in this simple slideshow.
 
 `mpremote` is a Python package with a command-line interface. Install it with
 the host tools above, then use `deploy.py` to upload programs and files. On
-first deployment, include `--install-library` to copy `pybadge.py` and the
+first deployment, include `--install-library` to copy `byui_ebadge.py` and the
 backend directory:
 
 ```sh
@@ -424,7 +424,7 @@ repeat the option to copy more than one asset. The same flag can upload a
 manual test runner without replacing `/main.py`:
 
 ```sh
-python deploy.py --asset hardware_tests/run_pybadge_checks.py
+python deploy.py --asset hardware_tests/run_byui_ebadge_checks.py
 ```
 
 Use `--directory DIR` to recursively copy a complete folder to the badge,
@@ -451,7 +451,7 @@ python deploy.py --install-library \
 ```
 
 Add more `--asset` options to install more programs. The selector scans `.py`
-files in the badge root and skips `main.py`, `boot.py`, `pybadge.py`, and the
+files in the badge root and skips `main.py`, `boot.py`, `byui_ebadge.py`, and the
 selector itself.
 
 The deploy helper starts `mpremote` through the same Python interpreter used
@@ -480,7 +480,7 @@ the guided runner as an asset, and open the interactive REPL:
 
 ```sh
 git rev-parse --short HEAD
-python deploy.py --asset hardware_tests/run_pybadge_checks.py
+python deploy.py --asset hardware_tests/run_byui_ebadge_checks.py
 python -m mpremote repl
 ```
 
@@ -488,8 +488,8 @@ The runner uses keyboard prompts, so launch it from the interactive REPL, not
 with `mpremote run`. At the MicroPython `>>>` prompt, enter:
 
 ```python
-import run_pybadge_checks
-run_pybadge_checks.main()
+import run_byui_ebadge_checks
+run_byui_ebadge_checks.main()
 ```
 
 Follow the prompts to press and release each button, confirm LED/display/tone
@@ -542,11 +542,11 @@ or infer their positions.
 
 ### Joystick values
 
-The `pybadge.joystick()` function returns a tuple `(x, y)` in the simulator
+The `byui_ebadge.joystick()` function returns a tuple `(x, y)` in the simulator
 and test backends, with each axis ranging from `-1.0` to `1.0`. For example:
 
 ```python
-x, y = pybadge.joystick()
+x, y = byui_ebadge.joystick()
 ```
 
 For `x`, `-1.0` means fully left and `1.0` fully right. For `y`, `-1.0`

@@ -6,11 +6,11 @@ Tests can select the deterministic ``test`` mode.
 
 Example::
 
-    import pybadge
+    import byui_ebadge
 
-    pybadge.initialize()
-    if pybadge.is_pressed(pybadge.BUTTON_A):
-        pybadge.set_rgb_led("blue")
+    byui_ebadge.initialize()
+    if byui_ebadge.is_pressed(byui_ebadge.BUTTON_A):
+        byui_ebadge.set_rgb_led("blue")
 """
 
 BUTTON_A = "A"
@@ -147,7 +147,7 @@ def current_mode():
 
 def _require_backend():
     if _backend is None:
-        raise NotInitializedError("call pybadge.initialize() before using board helpers")
+        raise NotInitializedError("call byui_ebadge.initialize() before using board helpers")
     return _backend
 
 

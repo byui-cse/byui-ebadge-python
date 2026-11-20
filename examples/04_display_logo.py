@@ -4,13 +4,13 @@ Run `python resize_image.py byui-cse.png` from the repository root first. Copy
 the generated BMP to the badge when using hardware mode.
 """
 
-import pybadge
+import byui_ebadge
 
 
 def main():
-    pybadge.initialize()
-    pybadge.display_clear()
-    pybadge.display_image("byui-cse_badge.bmp", x=0, y=0)
+    byui_ebadge.initialize()
+    byui_ebadge.display_clear()
+    byui_ebadge.display_image("byui-cse_badge.bmp", x=0, y=0)
 
 
 if __name__ == "__main__":

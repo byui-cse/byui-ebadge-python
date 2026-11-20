@@ -1,4 +1,4 @@
-"""Helpers for testing programs that use :mod:`pybadge` without hardware."""
+"""Helpers for testing programs that use :mod:`byui_ebadge` without hardware."""
 
 from contextlib import contextmanager
 
@@ -19,14 +19,14 @@ def session(backend=None):
         from testing import session
 
         with session() as board:
-            board.press_button(pybadge.BUTTON_A)
-            assert pybadge.is_pressed(pybadge.BUTTON_A)
+            board.press_button(byui_ebadge.BUTTON_A)
+            assert byui_ebadge.is_pressed(byui_ebadge.BUTTON_A)
     """
-    import pybadge
+    import byui_ebadge
 
     backend = backend or make_backend()
-    pybadge.initialize(mode="test", backend=backend)
+    byui_ebadge.initialize(mode="test", backend=backend)
     try:
         yield backend
     finally:
-        pybadge.shutdown()
+        byui_ebadge.shutdown()

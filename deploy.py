@@ -1,4 +1,4 @@
-"""Copy pybadge files and user programs to an eBadge with mpremote.
+"""Copy byui_ebadge files and user programs to an eBadge with mpremote.
 
 Examples::
 
@@ -32,8 +32,8 @@ def build_command(
         operations.append([
             "fs",
             "cp",
-            str(PROJECT_ROOT / "pybadge.py"),
-            ":pybadge.py",
+            str(PROJECT_ROOT / "byui_ebadge.py"),
+            ":byui_ebadge.py",
         ])
         operations.append([
             "fs",
@@ -91,7 +91,7 @@ def _existing_directory(parser, path):
 def main():
     """Parse deployment options and run mpremote."""
     parser = argparse.ArgumentParser(
-        description="Copy pybadge software and user files to an eBadge.",
+        description="Copy byui_ebadge software and user files to an eBadge.",
         epilog=(
             "Examples:\n"
             "  python deploy.py --port COM3 --install-library "
@@ -114,7 +114,7 @@ def main():
     parser.add_argument(
         "--install-library",
         action="store_true",
-        help="copy pybadge.py and the backends directory to the badge",
+        help="copy byui_ebadge.py and the backends directory to the badge",
     )
     parser.add_argument(
         "--keep-name",
@@ -162,7 +162,7 @@ def main():
     ]
 
     if args.install_library:
-        for required in (PROJECT_ROOT / "pybadge.py", PROJECT_ROOT / "backends"):
+        for required in (PROJECT_ROOT / "byui_ebadge.py", PROJECT_ROOT / "backends"):
             if not required.exists():
                 parser.error("required library path is missing: {}".format(required))
 

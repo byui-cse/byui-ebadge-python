@@ -1,6 +1,6 @@
 """Interactive checks of the maintained hardware backend implementation."""
 
-from pybadge import UnsupportedFeatureError
+from byui_ebadge import UnsupportedFeatureError
 from backends.hardware_backend import HardwareBackend
 
 

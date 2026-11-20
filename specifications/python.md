@@ -2,11 +2,11 @@
 
 ## Scope
 
-These standards apply to new project Python code, especially the user-facing `pybadge.py` module and its supporting project code. They do not apply to archived samples in `old/python/` or upstream design files kept in `board/`; those files are reference examples and should be preserved as such.
+These standards apply to new project Python code, especially the user-facing `byui_ebadge.py` module and its supporting project code. They do not apply to archived samples in `old/python/` or upstream design files kept in `board/`; those files are reference examples and should be preserved as such.
 
 The software targets MicroPython on the ESP32-S3 eBadge. Keep the public interface approachable for learners who know Python functions but do not know electronics APIs.
 
-`pybadge.py` has three runtime modes with one shared API: hardware mode on the physical badge, interactive simulator mode on a computer, and deterministic headless test mode for `pytest`. The simulator presents a terminal board view with clickable buttons and joystick positions; it models display, LED, and buzzer output. The test backend must not launch a UI or wait for input.
+`byui_ebadge.py` has three runtime modes with one shared API: hardware mode on the physical badge, interactive simulator mode on a computer, and deterministic headless test mode for `pytest`. The simulator presents a terminal board view with clickable buttons and joystick positions; it models display, LED, and buzzer output. The test backend must not launch a UI or wait for input.
 
 ## Design principles
 
@@ -50,7 +50,7 @@ The software targets MicroPython on the ESP32-S3 eBadge. Keep the public interfa
 ## Example and review expectations
 
 - Keep examples short and runnable on the supported badge firmware.
-- Prefer examples that introduce one concept at a time and use `pybadge.py` instead of low-level `machine` calls.
+- Prefer examples that introduce one concept at a time and use `byui_ebadge.py` instead of low-level `machine` calls.
 - When changing an API, update its docstring and the project README or relevant specification so they describe the same behavior.
 - Review new project code for MicroPython compatibility, clear failure behavior, and unintended interaction with board peripherals.
 

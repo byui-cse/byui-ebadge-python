@@ -59,10 +59,11 @@ else
 fi
 
 echo "Erasing flash and installing MicroPython (esptool will detect the port)."
-"$PYTHON" -m esptool erase_flash
-"$PYTHON" -m esptool --baud 460800 write_flash 0 "$FIRMWARE_PATH"
+"$PYTHON" -m esptool erase-flash
+"$PYTHON" -m esptool --baud 460800 write-flash 0 "$FIRMWARE_PATH"
 
 echo "Deploying the eBadge library, prepared Python logo, and example 04."
+echo "Running: $PYTHON deploy.py --install-library --asset $IMAGE_PATH examples/04_display_logo.py"
 "$PYTHON" deploy.py --install-library --asset "$IMAGE_PATH" examples/04_display_logo.py
 
 echo "Setup complete. Power-cycle the badge or press its reset button to run the logo example."

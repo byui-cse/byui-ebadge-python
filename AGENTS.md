@@ -8,13 +8,14 @@ This repository develops a user-friendly MicroPython wrapper for the BYU-Idaho e
 
 - `pybadge.py`: the user-facing helper library for supported eBadge functions. Keep programs in `examples/` separate from this implementation.
 - A hardware backend for running `pybadge.py` on the physical eBadge and a computer simulator backend for running the same programs on a regular computer.
+- `projects/`: a user workspace for personal programs; keep maintained examples in `examples/` and shared implementation in the library and backends.
 - `board/`: board designs and code samples used as source material for hardware details. Keep the e-badge source repository here as a Git submodule; the project is currently targeting board version V4.1.1.
 - `specifications/`: software and board specifications. Include Python coding standards and a board specification describing physical layout, pins, connected components, and capabilities such as Wi-Fi. Derive board facts from the materials in `board/` and cite or point to the relevant source files where practical.
 - `README.md`: explain the repository, its structure, and how to set up and use the board. Embed current V4.1.1 board photos. Include the MicroPython installation instructions from `hardware/ebadge/README.md`, adapting paths to the final layout as needed.
 
 ## Distribution and user programs
 
-- Treat this repository as the maintained source for the wrapper, examples, and setup documentation. Keep user programs in `examples/` or a clearly named work directory; normal use should not require editing library internals.
+- Treat this repository as the maintained source for the wrapper, examples, and setup documentation. Keep user-created programs in `projects/`; use `examples/` for maintained demonstrations. Normal use should not require editing library internals.
 - Support Git-based copies and offline distribution as a ZIP or prepared checkout. Do not assume users have reliable network access after receiving the files.
 - Instructions should identify a known revision when reproducibility matters. Keep personal programs and generated files out of the maintained library source unless they are intended project contributions.
 - Do not require pip packaging as the only way to use the project. Once the API is stable, a versioned host-side package may supplement the source checkout for simulator use. Badge deployment remains a separate transfer of MicroPython-compatible files.

@@ -79,6 +79,8 @@ and components; the back includes a printed quick reference for GPIOs and buses.
 | `board/` | eBadge Git submodule and hardware design source (initialize with the submodule command below). |
 | `specifications/` | Python standards and the current V4.1.1 board specification. |
 | `examples/` | Small programs demonstrating the public API. |
+| `projects/` | A workspace for user-created programs. |
+| `simulator.py` | Runs an example or project program locally with the terminal simulator. |
 | `old/python/` | Archived course samples and hardware libraries. These are reference examples and do not follow this project's Python standards. |
 | `hardware/ebadge/` | eBadge setup guide and reference material. |
 | `resize_image.py` | Host utility that prepares one image or a directory tree of 24-bit BMPs for the badge display. |
@@ -178,13 +180,16 @@ The course setup guide refers to `ESP32_GENERIC_S3-20260824-v1.29.0.bin`, but
 that binary is not currently present in this checkout. Use the filename of the
 firmware image you downloaded in the command below.
 
-Erase the badge flash and install the firmware (replace `<PORT>` and the image
-filename with the values for your computer):
+Erase the badge flash and install the firmware. Both commands try to find the
+Espressif device automatically:
 
 ```sh
-python -m esptool --port <PORT> erase_flash
-python -m esptool --port <PORT> --baud 460800 write_flash 0 ESP32_GENERIC_S3-20260824-v1.29.0.bin
+python -m esptool erase_flash
+python -m esptool --baud 460800 write_flash 0 ESP32_GENERIC_S3-20260824-v1.29.0.bin
 ```
+
+If automatic detection does not find the badge, specify its serial port by
+adding `--port <PORT>` before `erase_flash` or `write_flash`.
 
 If the board does not enter download mode, hold **BOOT** while starting the
 flash operation, then release it once flashing begins. Check the installed
@@ -193,12 +198,13 @@ flash operation, then release it once flashing begins. Check the installed
 Open the MicroPython REPL (interactive prompt):
 
 ```sh
-python -m mpremote connect <PORT>
+python -m mpremote repl
 ```
 
 At the `>>>` prompt, try `print("Hello from the eBadge!")`. Press **Ctrl-]** to
-leave the REPL. If port auto-detection works, `python -m mpremote` can connect
-without an explicit port.
+leave the REPL. `mpremote` automatically connects to the first available USB
+serial device. If it does not find the badge, connect explicitly with
+`python -m mpremote connect <PORT> repl`.
 
 ## Run the headless tests
 
@@ -225,22 +231,27 @@ Install Textual:
 python -m pip install textual
 ```
 
-From the repository root, run a program that calls `pybadge.initialize()`.
-For example, on macOS or Linux:
+From the repository root, use `simulator.py` with an example name, a project
+name, or a Python file path:
 
 ```sh
-PYTHONPATH=. python examples/01_button_led.py
+python simulator.py 01_button_led
+python simulator.py snake
+python simulator.py projects/my_program.py
 ```
 
-To open the simulator with sample screen and LED output, run:
+The `.py` suffix is optional for names in `examples/` and `projects/`. The
+runner adds the repository and program directories to `PYTHONPATH` and runs
+the program from the repository root. On a computer, `pybadge.initialize()`
+automatically selects the simulator. For example, to open the sample screen
+and LED output:
 
 ```sh
-PYTHONPATH=. python3 examples/00_led_strip.py
+python simulator.py 00_led_strip
 ```
 
-In PowerShell, use `$env:PYTHONPATH = "."` before running the same Python
-script. The clickable D-pad and A/B buttons model physical buttons; the
-separate joystick pad sets normalized joystick positions until centered again.
+The clickable D-pad and A/B buttons model physical buttons; the separate
+joystick pad sets normalized joystick positions until centered again.
 The screen, RGB indicator, 24 strip LEDs, and buzzer state are shown in the
 terminal board. Press `q` to close the board and **Ctrl-C** to stop a running
 example program.
@@ -370,9 +381,9 @@ backend directory:
 python deploy.py --install-library examples/01_button_led.py
 ```
 
-`deploy.py` defaults to mpremote's automatic port selection. Omit `--port`
-when the badge is detected automatically; add `--port <PORT>` when you need to
-select a specific badge.
+`deploy.py` and `mpremote` automatically select the first available badge.
+Use `--port <PORT>` with `deploy.py` only if automatic detection does not find
+the badge or you need to select a specific device.
 
 The script copies the selected program to `/main.py`. After the library is
 installed, later programs do not need the library flag:
@@ -380,6 +391,27 @@ installed, later programs do not need the library flag:
 ```sh
 python deploy.py examples/05_display_shapes.py
 ```
+
+Use `--keep-name` when you want to keep the source filename on the badge
+instead of replacing `/main.py`. This is useful when launching a program from
+the interactive MicroPython REPL. A file kept under its own name does not run
+automatically on boot; use the default `/main.py` destination for that:
+
+```sh
+python deploy.py --install-library --keep-name examples/03_button_tone.py
+python -m mpremote repl
+```
+
+At the MicroPython `>>>` prompt, run the deployed file with:
+
+```python
+exec(open("/03_button_tone.py").read())
+```
+
+The same command works with `/main.py` if you used the default deployment
+name. Press **Ctrl-C** to interrupt a running program; press **Ctrl-]** to
+leave the REPL. Programs that define a `main()` function can also be imported
+by module name and started with `module_name.main()`.
 
 To deploy the logo example and its prepared image in one command:
 
@@ -412,7 +444,7 @@ program and A launches it. Programs should return normally or handle
 Ctrl-C/KeyboardInterrupt to return to the menu.
 
 ```sh
-python deploy.py --port <PORT> --install-library \
+python deploy.py --install-library \
   --asset examples/01_button_led.py \
   --asset examples/05_display_shapes.py \
   program_selector.py

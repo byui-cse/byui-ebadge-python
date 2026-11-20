@@ -4,6 +4,7 @@ Examples::
 
     python deploy.py --port COM3 --install-library examples/01_button_led.py
     python deploy.py --port COM3 examples/03_button_tone.py
+    python deploy.py --port COM3 --keep-name projects/my_program.py
     python deploy.py --port COM3 --asset byui-cse_badge.bmp examples/04_display_logo.py
     python deploy.py --port COM3 --directory photos
 """
@@ -18,7 +19,12 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 
 
 def build_command(
-    port, install_library=False, program=None, assets=(), directories=()
+    port,
+    install_library=False,
+    program=None,
+    assets=(),
+    directories=(),
+    keep_program_name=False,
 ):
     """Build the mpremote command that copies the requested files."""
     operations = []
@@ -38,7 +44,8 @@ def build_command(
         ])
 
     if program is not None:
-        operations.append(["fs", "cp", str(program), ":main.py"])
+        remote_name = Path(program).name if keep_program_name else "main.py"
+        operations.append(["fs", "cp", str(program), ":" + remote_name])
 
     if assets:
         operations.append([
@@ -110,6 +117,11 @@ def main():
         help="copy pybadge.py and the backends directory to the badge",
     )
     parser.add_argument(
+        "--keep-name",
+        action="store_true",
+        help="copy the program under its original filename instead of /main.py",
+    )
+    parser.add_argument(
         "--asset",
         action="append",
         default=[],
@@ -134,6 +146,8 @@ def main():
         and not args.directory
     ):
         parser.error("provide a program, asset, directory, or --install-library")
+    if args.keep_name and args.program is None:
+        parser.error("--keep-name requires a program")
 
     program = None
     if args.program is not None:
@@ -156,6 +170,7 @@ def main():
         args.port,
         install_library=args.install_library,
         program=program,
+        keep_program_name=args.keep_name,
         assets=assets,
         directories=directories,
     )

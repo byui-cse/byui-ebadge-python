@@ -139,8 +139,13 @@ animation or a timing list.
 
 The display API also includes `draw_pixel()`, `draw_line()`, and
 `draw_rectangle()`. A rectangle can be outlined or filled with `filled=True`.
-The simulator records these drawing operations and their coordinates in its
-screen area; it does not rasterize them into a graphical image.
+The current simulator uses a terminal interface, so its screen is limited to
+text character cells rather than the badge's 320 × 240 pixels. It records
+drawing operations and their coordinates as text; games and graphics therefore
+do not appear as rendered objects, and may look or feel different from the
+physical display. The simulator still models clickable controls, display
+operations, LEDs, and buzzer output. A pixel-rendered screen would require a
+graphical simulator backend or a terminal renderer with its own pixel buffer.
 
 The upstream eBadge source is tracked as a Git submodule. Initialize it after a
 fresh checkout with:

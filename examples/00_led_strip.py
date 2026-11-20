@@ -1,23 +1,26 @@
-"""Open the computer simulator with a few sample outputs.
+"""Cycle sample RGB and addressable LED colors on a computer or eBadge.
 
-Run from the repository root with:
-    PYTHONPATH=. python3 examples/00_led_strip.py
+Run on a computer from the repository root with:
+    python simulator.py 00_led_strip
 
-Click the controls to explore the simulated buttons and joystick. Press q to
-close the simulator, then Ctrl-C in the terminal to stop this program.
+Deploy to a badge from the repository root with:
+    python deploy.py --install-library examples/00_led_strip.py
+
+The program automatically selects the simulator on a computer and the
+hardware backend on a MicroPython badge. Press Ctrl-C to stop it.
 """
 
 import byui_ebadge
 
 
 def main():
-    byui_ebadge.initialize(mode="simulator")
+    byui_ebadge.initialize()
     byui_ebadge.display_clear("black")
-    byui_ebadge.display_text("Simulator ready", x=8, y=16, color="white")
+    byui_ebadge.display_text("LED demo running", x=8, y=16, color="white")
     byui_ebadge.set_rgb_led("blue")
     led_colors = ["red", "orange", "yellow", "green", "cyan", "blue"] * 4
     byui_ebadge.set_led_strip(led_colors)
-    print("Simulator is open. Press q to close its window, then Ctrl-C to exit.")
+    print("LED demo is running. Press Ctrl-C to exit.")
 
     try:
         while True:

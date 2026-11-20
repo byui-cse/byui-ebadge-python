@@ -53,6 +53,7 @@
 - [x] Example 3: play a note when a button is pressed (`examples/03_button_tone.py`).
 - [x] Example 4: display the BYU-Idaho logo from a prepared display image (`examples/04_display_logo.py`).
 - [x] Example 5: draw pixels, lines, and outlined and filled rectangles (`examples/05_display_shapes.py`).
+- [x] Example 12: play the supplied Popcorn melody using the public buzzer helpers (`examples/12_popcorn.py`).
 
 ## Additional requested work
 

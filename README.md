@@ -299,6 +299,7 @@ maintained examples.
 11. Connect to Wi-Fi, download a file with HTTP GET, and send JSON with HTTP
     POST.
 12. Select a Wi-Fi network on the badge and display its connection details.
+13. Play the Popcorn melody on the piezo buzzer.
 
 Snake and Tetris use the D-pad; the Etch-a-Sketch example uses the D-pad to
 draw, A to change color, B to toggle the eraser, and A+B to clear the canvas.
@@ -414,6 +415,12 @@ python deploy.py --install-library examples/01_button_led.py
 `deploy.py` and `mpremote` automatically select the first available badge.
 Use `--port <PORT>` with `deploy.py` only if automatic detection does not find
 the badge or you need to select a specific device.
+
+After deploying a new or updated Python script, restart the board with its
+power switch or press the reset button so MicroPython loads the updated
+`/main.py`. Copying a script does not stop or restart a program that is already
+running. A script deployed with `--keep-name` must still be launched from the
+REPL.
 
 The script copies the selected program to `/main.py`. After the library is
 installed, later programs do not need the library flag:

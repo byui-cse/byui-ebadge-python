@@ -21,6 +21,12 @@ This repository develops a user-friendly MicroPython wrapper for the BYU-Idaho e
 - Do not require pip packaging as the only way to use the project. Once the API is stable, a versioned host-side package may supplement the source checkout for simulator use. Badge deployment remains a separate transfer of MicroPython-compatible files.
 - Keep distribution tradeoffs in `specifications/user-workflow.md` and summarize practical setup steps in `README.md`.
 
+## README onboarding requirement
+
+- Review the README from the perspective of a Python programmer using MicroPython and an ESP32 for the first time. Define unfamiliar terms and distinguish host-side Python from MicroPython running on the badge.
+- Give a complete path from prerequisites and board setup to running a first example, creating a personal program in `projects/`, trying it in the simulator, and deploying it to the badge. State firmware assumptions and simulator or hardware limitations where they affect those steps.
+- Check that a new user can follow the README without guessing about commands, filenames, working directories, or which interpreter runs each program. Add the missing context when a step depends on prior MicroPython, ESP32, or electronics knowledge.
+
 ## Audience and terminology
 
 - Describe this project as a user-friendly Python wrapper for any user of the BYU-Idaho eBadge. Do not frame the repository, its API, examples, or documentation around particular education roles. Use general terms such as “user,” “program,” and “project.”

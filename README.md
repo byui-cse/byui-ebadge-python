@@ -1,23 +1,53 @@
-# BYU-I eBadge Python Library
+# BYU-Idaho eBadge Python Projects
 
-`byui_ebadge` is a beginner-friendly Python interface for BYU-Idaho's ESP32-S3
-eBadge. The goal is for any user to write ordinary Python programs that use
-buttons, LEDs, the screen, sound, sensors, and Wi-Fi without dealing with GPIO
-numbers or low-level electronics APIs.
+This is the BYU-Idaho eBadge repository for Python projects. It includes
+`byui_ebadge`, a beginner-friendly interface for the ESP32-S3 eBadge, so users
+can write ordinary Python programs for its buttons, LEDs, screen, sound,
+sensors, and Wi-Fi without dealing with GPIO numbers or low-level electronics
+APIs.
 
 The `byui_ebadge.py` interface supports three modes: the physical eBadge, an
-interactive terminal simulator, and a headless test backend. The public API
-has been reviewed; remaining work is tracked in [TODO.md](TODO.md) and the
-[specifications](specifications/). Programs in [`examples/`](examples/) show
-the intended user experience. The simulator keeps the BYU-Idaho logo as
-permanent blue-board artwork, separate from the simulated screen controlled
-by the running program.
+interactive terminal simulator, and a headless test backend. Programs in
+[`examples/`](examples/) are ready to try; put programs you write in
+[`projects/`](projects/). The simulator keeps the BYU-Idaho logo as permanent
+blue-board artwork, separate from the simulated screen controlled by the
+running program.
+
+## MicroPython on the eBadge
+
+MicroPython is a version of Python designed to run on microcontrollers. Your
+computer runs regular Python to use this repository's setup tools and
+simulator; the eBadge runs MicroPython on its ESP32-S3. The board's MicroPython
+firmware provides the Python runtime and built-in modules. This repository
+provides `byui_ebadge.py` and the hardware drivers that connect those helpers
+to the eBadge's buttons, display, LEDs, buzzer, sensors, and Wi-Fi. These
+library files are copied to the badge with `deploy.py --install-library`;
+they are not part of the firmware.
+
+For a general introduction to writing MicroPython on an ESP32, see the
+official [MicroPython tutorial for ESP32](https://docs.micropython.org/en/latest/esp32/tutorial/intro.html).
+The setup instructions below cover the eBadge-specific firmware and tools.
+
+After firmware startup, MicroPython runs its internal `_boot.py`, then the
+badge's optional `/boot.py`, then `/main.py` if that file exists. `boot.py` is
+for brief startup setup and should finish; `main.py` is the program that starts
+when the badge powers on or resets. If `main.py` is missing or finishes,
+MicroPython opens the interactive prompt (REPL). See the official
+[MicroPython reset and boot sequence](https://docs.micropython.org/en/latest/reference/reset_boot.html).
+
+By default, `deploy.py` copies your selected program to `/main.py`, replacing
+any existing `/main.py`, so the new program runs automatically on the next
+reset or power-on. It does not replace `boot.py`. Use `--keep-name` to copy a
+program under its original filename instead; that program will not start
+automatically, but can be run from the REPL as described below.
 
 ## Using and sharing this project
 
 Use this repository as the maintained source for the library, examples, and
-setup instructions. Keep personal programs under `examples/` or a clearly
-named work folder; normal use should not require editing library internals.
+setup instructions. Try the maintained examples in `examples/`; put your own
+programs in `projects/`. This keeps personal work separate from examples and
+the shared library, especially when you fork the repository. Normal use should
+not require editing library internals.
 Users can fork or clone the repository when GitHub access is available. For
 restricted or offline environments, distribute a ZIP or prepared checkout.
 After the initial copy, programs can be developed without network access.
@@ -78,8 +108,8 @@ and components; the back includes a printed quick reference for GPIOs and buses.
 | `deploy.py` | Host-side helper that uses `mpremote` to copy the library, a program, and optional assets to the badge. |
 | `assets/board/` | eBadge Git submodule and hardware design source (initialize with the submodule command below). |
 | `specifications/` | Python standards and the current V4.1.1 board specification. |
-| `examples/` | Small programs demonstrating the public API. |
-| `projects/` | A workspace for user-created programs. |
+| `examples/` | Ready-to-try programs demonstrating the public API. |
+| `projects/` | Workspace for programs you create, especially in your own fork. |
 | `simulator.py` | Runs an example or project program locally with the terminal simulator. |
 | `resize_image.py` | Host utility that prepares one image or a directory tree of 24-bit BMPs for the badge display. |
 | `assets/byui-cse.png` | Logo asset used by the display example. |
@@ -252,7 +282,9 @@ example program.
 
 ## Run the examples
 
-The programs in [`examples/`](examples/) demonstrate the intended API:
+The programs in [`examples/`](examples/) are complete examples to run and
+adapt. Put your own programs in `projects/` to keep them separate from the
+maintained examples.
 
 1. Light the RGB LED while button A is held.
 2. Scan for and list nearby Wi-Fi networks.
@@ -278,9 +310,8 @@ validation; see [TODO.md](TODO.md) for remaining work and hardware limitations.
 
 ### Build a simple program
 
-Create `my_program.py` in the repository root or in a work folder. Initialize
-the library, check a button with `is_pressed()`, and use the display and RGB
-LED helpers:
+Create `projects/my_program.py`. Initialize the library, check a button with
+`is_pressed()`, and use the display and RGB LED helpers:
 
 ```python
 import byui_ebadge
@@ -316,11 +347,16 @@ if __name__ == "__main__":
     main()
 ```
 
-Run the program in the computer simulator using the [simulator instructions](#run-the-terminal-simulator).
+Run the program in the computer simulator using the [simulator instructions](#run-the-terminal-simulator):
+
+```sh
+python simulator.py projects/my_program.py
+```
+
 To run it on the badge, connect the board and deploy the library and program:
 
 ```sh
-python deploy.py --install-library my_program.py
+python deploy.py --install-library projects/my_program.py
 ```
 
 `is_pressed()` returns `True` while the named button is held. The display
@@ -449,12 +485,12 @@ files in the badge root and skips `main.py`, `boot.py`, `byui_ebadge.py`, and th
 selector itself.
 
 The deploy helper starts `mpremote` through the same Python interpreter used
-to run the script. The package must be installed in that environment. The
-helper uses the maintained backend and driver modules; files from
-the maintained library files are installed separately from user programs.
+to run the script. The package must be installed in that environment. It copies
+the maintained backend and driver modules when `--install-library` is used;
+these library files are installed separately from user programs.
 
 `HardwareBackend` owns the eBadge pin setup and peripheral operations.
-The `backends/hardware/` package supplies its ST7789 display driver and font;
+The `backends/hardware/` package supplies its ST7789 display driver and font.
 The addressable LED strip uses MicroPython's `neopixel` module when that
 feature is called.
 The joystick direction mapping remains unavailable pending physical

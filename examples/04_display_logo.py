@@ -9,8 +9,10 @@ import byui_ebadge
 
 def main():
     byui_ebadge.initialize()
+    byui_ebadge.set_rgb_led("yellow")
     byui_ebadge.display_clear()
     byui_ebadge.display_image("lego-python_badge.bmp", x=0, y=0)
+    byui_ebadge.set_rgb_led("blue")
 
 
 if __name__ == "__main__":

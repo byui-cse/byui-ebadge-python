@@ -289,8 +289,8 @@ class HardwareBackend:
             if len(header) < 54 or header[:2] != b"BM":
                 raise ValueError("image must be a BMP file")
             pixel_offset = int.from_bytes(header[10:14], "little")
-            width = int.from_bytes(header[18:22], "little", signed=True)
-            signed_height = int.from_bytes(header[22:26], "little", signed=True)
+            width = self._read_signed_int32_le(header[18:22])
+            signed_height = self._read_signed_int32_le(header[22:26])
             bits = int.from_bytes(header[28:30], "little")
             compression = int.from_bytes(header[30:34], "little")
             if width <= 0 or signed_height == 0 or bits != 24 or compression != 0:
@@ -330,6 +330,14 @@ class HardwareBackend:
                 self._display.blit_buffer(
                     pixels, x, y + output_y, output_width, 1
                 )
+
+    @staticmethod
+    def _read_signed_int32_le(value):
+        """Read a signed little-endian 32-bit integer on MicroPython."""
+        result = int.from_bytes(value, "little")
+        if result >= 0x80000000:
+            result -= 0x100000000
+        return result
 
     def scan_wifi(self, include_details=False):
         """Scan visible Wi-Fi networks, restoring the prior radio state."""

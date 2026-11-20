@@ -64,6 +64,13 @@ _COLOR_NAMES = (
     PURPLE,
 )
 _GPIO_PINS = (GPIO13, GPIO14, GPIO15, GPIO16, GPIO17, GPIO18)
+_WIFI_PASSWORD_GROUPS = (
+    "abcdefghijklmnopqrstuvwxyz",
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "0123456789",
+    "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ ",
+)
+_WIFI_PASSWORD_GROUP_NAMES = ("lowercase", "uppercase", "numbers", "symbols")
 _backend = None
 _backend_mode = None
 
@@ -309,6 +316,222 @@ def connect_wifi(ssid, password, timeout_ms=15000):
 def disconnect_wifi():
     """Disconnect from Wi-Fi and turn off the station interface."""
     _require_backend().disconnect_wifi()
+
+
+def wifi_info():
+    """Return connection status, network name, signal strength, and IP.
+
+    ``signal_dbm`` and other connection details are ``None`` when disconnected
+    or when the active MicroPython port does not expose that detail.
+    """
+    return _require_backend().wifi_info()
+
+
+def display_wifi_info():
+    """Show the current Wi-Fi connection details on the badge display."""
+    info = wifi_info()
+    display_clear()
+    display_text("Wi-Fi status", x=8, y=8)
+    display_text(
+        "Connected: {}".format("yes" if info["connected"] else "no"),
+        x=8,
+        y=32,
+    )
+    if not info["connected"]:
+        return
+
+    display_text("Network: {}".format(info["ssid"] or "unknown"), x=8, y=56)
+    signal_dbm = info["signal_dbm"]
+    signal_text = (
+        "{} dBm".format(signal_dbm)
+        if signal_dbm is not None
+        else "unavailable"
+    )
+    display_text("Signal: {}".format(signal_text), x=8, y=80)
+    display_text(
+        "IP: {}".format(info["ip_address"] or "unavailable"),
+        x=8,
+        y=104,
+    )
+
+
+def connect_wifi_with_screen(timeout_ms=15000):
+    """Choose a visible Wi-Fi network and enter its password on the badge.
+
+    Use Up/Down to choose a network, A to select, and B to cancel. For a
+    password, Up/Down choose a character, Left/Right change character groups,
+    A adds a character, B deletes one, and Left+Right connects. This blocking
+    screen flow is available only in hardware mode. Hidden networks can still
+    be joined with :func:`connect_wifi` by entering their SSID directly.
+    """
+    if _backend_mode != "hardware":
+        raise UnsupportedFeatureError(
+            "The Wi-Fi setup screen requires hardware mode; Wi-Fi is not "
+            "modeled by the simulator or headless backend."
+        )
+    if isinstance(timeout_ms, bool) or not isinstance(timeout_ms, int):
+        raise TypeError("timeout_ms must be an integer")
+    if timeout_ms < 0:
+        raise ValueError("timeout_ms must be a non-negative integer")
+
+    networks = scan_wifi(include_details=True)
+    visible_networks = []
+    for network in networks:
+        ssid = network.get("ssid", "")
+        if not ssid:
+            continue
+        match = None
+        for existing in visible_networks:
+            if existing["ssid"] == ssid:
+                match = existing
+                break
+        if match is None:
+            visible_networks.append(network)
+        else:
+            new_signal = network.get("signal_dbm")
+            old_signal = match.get("signal_dbm")
+            if new_signal is not None and (
+                old_signal is None or new_signal > old_signal
+            ):
+                match.update(network)
+
+    if not visible_networks:
+        display_clear()
+        display_text("No visible Wi-Fi networks", x=8, y=8)
+        display_text("Press any button to return", x=8, y=32)
+        _wait_for_wifi_button()
+        return False
+
+    selected = _select_wifi_network(visible_networks)
+    if selected is None:
+        return False
+
+    if selected.get("security") == "open":
+        password = ""
+    else:
+        password = _enter_wifi_password(selected["ssid"])
+        if password is None:
+            return False
+
+    display_clear()
+    display_text("Connecting to Wi-Fi", x=8, y=8)
+    display_text(selected["ssid"], x=8, y=32)
+    connected = connect_wifi(selected["ssid"], password, timeout_ms)
+    if connected:
+        display_wifi_info()
+    else:
+        display_clear()
+        display_text("Could not connect", x=8, y=8)
+        display_text(selected["ssid"], x=8, y=32)
+        display_text("Check password and try again", x=8, y=56)
+    return connected
+
+
+def _select_wifi_network(networks):
+    selected = 0
+    while True:
+        display_clear()
+        display_text("Select Wi-Fi network", x=8, y=8)
+
+        first = max(0, min(selected - 3, len(networks) - 7))
+        for row, index in enumerate(range(first, min(first + 7, len(networks)))):
+            network = networks[index]
+            marker = ">" if index == selected else " "
+            ssid = network["ssid"]
+            if len(ssid) > 23:
+                ssid = ssid[:20] + "..."
+            signal_dbm = network.get("signal_dbm")
+            signal = "?" if signal_dbm is None else str(signal_dbm)
+            display_text(
+                "{} {:<23} {:>4} dBm".format(marker, ssid, signal),
+                x=8,
+                y=32 + row * 20,
+            )
+        display_text("Up/Down choose; A select", x=8, y=188)
+        display_text("B cancels", x=8, y=208)
+
+        button = _wait_for_wifi_button()
+        if button == BUTTON_UP:
+            selected = (selected - 1) % len(networks)
+        elif button == BUTTON_DOWN:
+            selected = (selected + 1) % len(networks)
+        elif button == BUTTON_A:
+            return networks[selected]
+        elif button == BUTTON_B:
+            return None
+
+
+def _enter_wifi_password(ssid):
+    password = ""
+    group_index = 0
+    character_index = 0
+    while True:
+        group = _WIFI_PASSWORD_GROUPS[group_index]
+        display_clear()
+        display_text("Password for network", x=8, y=8)
+        display_text(ssid[:32], x=8, y=32)
+        masked = "*" * len(password)
+        display_text("Password: {}".format(masked[-30:]), x=8, y=60)
+        display_text(
+            "Next char: [{}] {}".format(
+                group[character_index], _WIFI_PASSWORD_GROUP_NAMES[group_index]
+            ),
+            x=8,
+            y=84,
+        )
+        display_text("Up/Down: character", x=8, y=124)
+        display_text("Left/Right: character set", x=8, y=144)
+        display_text("A: add   B: erase", x=8, y=164)
+        display_text("Left+Right: connect", x=8, y=188)
+
+        button = _wait_for_wifi_button()
+        if button == "finish":
+            return password
+        if button == BUTTON_UP:
+            character_index = (character_index + 1) % len(group)
+        elif button == BUTTON_DOWN:
+            character_index = (character_index - 1) % len(group)
+        elif button == BUTTON_LEFT:
+            group_index = (group_index - 1) % len(_WIFI_PASSWORD_GROUPS)
+            character_index = min(
+                character_index, len(_WIFI_PASSWORD_GROUPS[group_index]) - 1
+            )
+        elif button == BUTTON_RIGHT:
+            group_index = (group_index + 1) % len(_WIFI_PASSWORD_GROUPS)
+            character_index = min(
+                character_index, len(_WIFI_PASSWORD_GROUPS[group_index]) - 1
+            )
+        elif button == BUTTON_A:
+            password += group[character_index]
+        elif button == BUTTON_B:
+            if not password:
+                return None
+            password = password[:-1]
+
+
+def _wait_for_wifi_button():
+    """Wait for one debounced button press, or a left+right chord."""
+    buttons = (
+        BUTTON_UP,
+        BUTTON_DOWN,
+        BUTTON_LEFT,
+        BUTTON_RIGHT,
+        BUTTON_A,
+        BUTTON_B,
+    )
+    while True:
+        if is_pressed(BUTTON_LEFT) and is_pressed(BUTTON_RIGHT):
+            while is_pressed(BUTTON_LEFT) or is_pressed(BUTTON_RIGHT):
+                pause(20)
+            pause(100)
+            return "finish"
+        for button in buttons:
+            if is_pressed(button):
+                while any(is_pressed(pressed) for pressed in buttons):
+                    pause(20)
+                pause(100)
+                return button
+        pause(20)
 
 
 def download_url(url, filename=None, headers=None):

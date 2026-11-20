@@ -15,6 +15,9 @@ class TestBackend:
         self.display_operations = []
         self.wifi_results = []
         self.wifi_connected = False
+        self.wifi_ssid = None
+        self.wifi_signal_dbm = None
+        self.wifi_ip_address = None
         self.http_get_response = b""
         self.http_post_response = b""
         self.http_requests = []
@@ -35,6 +38,9 @@ class TestBackend:
         self.led_strip = ["off"] * 24
         self.active_tone = None
         self.wifi_connected = False
+        self.wifi_ssid = None
+        self.wifi_signal_dbm = None
+        self.wifi_ip_address = None
         self.pwm_outputs.clear()
 
     def is_pressed(self, button):
@@ -96,12 +102,31 @@ class TestBackend:
     def is_wifi_connected(self):
         return self.wifi_connected
 
+    def wifi_info(self):
+        if not self.wifi_connected:
+            return {
+                "connected": False,
+                "ssid": None,
+                "signal_dbm": None,
+                "ip_address": None,
+            }
+        return {
+            "connected": True,
+            "ssid": self.wifi_ssid,
+            "signal_dbm": self.wifi_signal_dbm,
+            "ip_address": self.wifi_ip_address,
+        }
+
     def connect_wifi(self, ssid, password, timeout_ms):
         self.wifi_connected = True
+        self.wifi_ssid = ssid
         return True
 
     def disconnect_wifi(self):
         self.wifi_connected = False
+        self.wifi_ssid = None
+        self.wifi_signal_dbm = None
+        self.wifi_ip_address = None
 
     def download_url(self, url, filename, headers):
         if not self.wifi_connected:

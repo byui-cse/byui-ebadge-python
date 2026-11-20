@@ -45,6 +45,16 @@ the badge. GET returns response bytes or saves them to a filename; POST returns
 response bytes. Responses are closed after use. The GET helper reads the full
 response into memory, so use it for files that fit the badge's available RAM.
 
+For on-device setup, `connect_wifi_with_screen()` lists visible networks. Use
+Up/Down and A to choose one, then enter the password with Up/Down to select a
+character, Left/Right to change character groups, A to add, B to erase, and
+Left+Right to connect. `wifi_info()` returns a dictionary with `connected`,
+`ssid`, `signal_dbm`, and `ip_address`; `display_wifi_info()` shows the same
+details on the screen. These helpers use MicroPython's built-in `network`
+module; the optional HTTP package is only needed for GET and POST requests.
+The screen setup flow lists visible networks; use `connect_wifi(ssid, ...)`
+directly to join a hidden network.
+
 The terminal simulator models buttons, joystick positions, the screen, LEDs,
 and buzzer activity. It does not model Wi-Fi scanning or connections, HTTP,
 accelerometer or battery readings, external GPIO, voltage measurement, or PWM
@@ -244,7 +254,9 @@ The programs in [`examples/`](examples/) demonstrate the intended API:
 8. Draw with the directional buttons in Etch-a-Sketch.
 9. Play Tetris with the directional buttons.
 10. Choose and launch installed programs with `program_selector.py`.
-11. Connect to Wi-Fi, download a file with HTTP GET, and send JSON with HTTP POST.
+11. Connect to Wi-Fi, download a file with HTTP GET, and send JSON with HTTP
+    POST.
+12. Select a Wi-Fi network on the badge and display its connection details.
 
 Snake and Tetris use the D-pad; the Etch-a-Sketch example uses the D-pad to
 draw, A to change color, B to toggle the eraser, and A+B to clear the canvas.

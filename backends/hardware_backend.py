@@ -339,11 +339,54 @@ class HardwareBackend:
         """Return whether the station interface has an active connection."""
         return self._wlan().isconnected()
 
+    def wifi_info(self):
+        """Return connection state and available station network details."""
+        wlan = self._wlan()
+        if not wlan.isconnected():
+            return {
+                "connected": False,
+                "ssid": None,
+                "signal_dbm": None,
+                "ip_address": None,
+            }
+
+        try:
+            ssid = wlan.config("ssid")
+            if isinstance(ssid, bytes):
+                ssid = ssid.decode()
+        except (AttributeError, OSError, TypeError, ValueError):
+            ssid = None
+
+        try:
+            signal_dbm = wlan.status("rssi")
+        except (AttributeError, OSError, TypeError, ValueError):
+            signal_dbm = None
+
+        try:
+            ip_address = wlan.ifconfig()[0]
+        except (AttributeError, IndexError, OSError, TypeError, ValueError):
+            ip_address = None
+
+        return {
+            "connected": True,
+            "ssid": ssid,
+            "signal_dbm": signal_dbm,
+            "ip_address": ip_address,
+        }
+
     def connect_wifi(self, ssid, password, timeout_ms):
         """Connect to an access point, respecting the requested timeout."""
         wlan = self._wlan()
         if wlan.isconnected():
-            return True
+            try:
+                current_ssid = wlan.config("ssid")
+                if isinstance(current_ssid, bytes):
+                    current_ssid = current_ssid.decode()
+            except (AttributeError, OSError, TypeError, ValueError):
+                current_ssid = None
+            if current_ssid == ssid:
+                return True
+            wlan.disconnect()
         wlan.active(True)
         wlan.connect(ssid, password)
         start = self._utime.ticks_ms()

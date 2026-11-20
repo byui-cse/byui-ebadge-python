@@ -66,7 +66,8 @@
   - [x] Port Tetris using the D-pad and current public drawing helpers (`examples/09_tetris.py`).
 - [x] Create a program selector that lets a user choose which installed program to run (`program_selector.py`). Deploy it as `main.py`; it returns to the menu after a selected program finishes or is interrupted.
 - [x] Investigate USB keyboard support: V4.1.1 has native USB-host hardware, but the archived board note says keyboard host mode is Arduino-only and the supplied MicroPython 1.29.0 generic ESP32-S3 firmware has no USB-host HID API. A keyboard terminal would need custom firmware or a native host driver; it is not supported by the current Python target. See [`hardware-v4.1.1.md`](specifications/hardware-v4.1.1.md).
-- [ ] Expand Wi-Fi support in `pybadge.py`: evaluate whether to wrap a compatible Wi-Fi library or use MicroPython's `network` module directly; build an on-screen flow using the display and directional buttons to select a scanned network and enter its password; provide helpers for connection status and connection details (network name, signal strength, and IP address), including one that returns a dictionary and one that displays the details.
+- [x] Expand Wi-Fi support in `pybadge.py`. Use MicroPython's built-in `network` module instead of adding a separate Wi-Fi dependency; add an on-screen network and password flow plus dictionary and display helpers for connection details.
+  - [ ] Validate the on-screen setup flow and connected SSID, RSSI, and IP reporting on physical V4.1.1 hardware.
 - [x] Add a README tutorial explaining how to build a program, detect pressed buttons, control the board lights, and use the display.
 
 ## Deferred future work

@@ -337,6 +337,11 @@ class SimulatorBackend(TestBackend):
             "Wi-Fi connections are not modeled by the terminal simulator."
         )
 
+    def wifi_info(self):
+        raise UnsupportedFeatureError(
+            "Wi-Fi connections are not modeled by the terminal simulator."
+        )
+
     def connect_wifi(self, ssid, password, timeout_ms):
         raise UnsupportedFeatureError(
             "Wi-Fi connections are not modeled by the terminal simulator."

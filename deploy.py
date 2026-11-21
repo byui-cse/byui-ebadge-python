@@ -7,6 +7,7 @@ Examples::
     python deploy.py --port COM3 --keep-name projects/my_program.py
     python deploy.py --port COM3 --asset assets/byui-cse_badge.bmp examples/04_display_logo.py
     python deploy.py --port COM3 --directory photos
+    python deploy.py --erase-python --install-library examples/01_button_led.py
 """
 
 import argparse
@@ -21,6 +22,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 def build_command(
     port,
     install_library=False,
+    erase_python=False,
     program=None,
     assets=(),
     directories=(),
@@ -28,6 +30,12 @@ def build_command(
 ):
     """Build the mpremote command that copies the requested files."""
     operations = []
+    if erase_python:
+        operations.append([
+            "run",
+            str(PROJECT_ROOT / "tools" / "erase_python_files.py"),
+        ])
+
     if install_library:
         operations.append([
             "fs",
@@ -96,7 +104,9 @@ def main():
             "Examples:\n"
             "  python deploy.py --port COM3 --install-library "
             "examples/01_button_led.py\n"
-            "  python deploy.py --port COM3 --directory photos"
+            "  python deploy.py --port COM3 --directory photos\n"
+            "  python deploy.py --erase-python --install-library "
+            "examples/01_button_led.py"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -115,6 +125,14 @@ def main():
         "--install-library",
         action="store_true",
         help="copy byui_ebadge.py and the backends directory to the badge",
+    )
+    parser.add_argument(
+        "--erase-python",
+        action="store_true",
+        help=(
+            "delete all .py, .mpy, and .pyc files from the badge before "
+            "copying requested files; this includes main.py and boot.py"
+        ),
     )
     parser.add_argument(
         "--keep-name",
@@ -141,6 +159,7 @@ def main():
 
     if (
         not args.install_library
+        and not args.erase_python
         and args.program is None
         and not args.asset
         and not args.directory
@@ -148,6 +167,9 @@ def main():
         parser.error("provide a program, asset, directory, or --install-library")
     if args.keep_name and args.program is None:
         parser.error("--keep-name requires a program")
+    erase_helper = PROJECT_ROOT / "tools" / "erase_python_files.py"
+    if args.erase_python and not erase_helper.is_file():
+        parser.error("required erase helper is missing: tools/erase_python_files.py")
 
     program = None
     if args.program is not None:
@@ -169,6 +191,7 @@ def main():
     command = build_command(
         args.port,
         install_library=args.install_library,
+        erase_python=args.erase_python,
         program=program,
         keep_program_name=args.keep_name,
         assets=assets,

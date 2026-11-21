@@ -195,7 +195,40 @@ labeled **USB-UART** with a data-capable cable. Install the host tools:
 python -m pip install esptool mpremote
 ```
 
-Find the serial port assigned to the badge:
+### Automated first-time setup
+
+From the repository checkout, run the script for your shell:
+
+**Windows PowerShell:**
+
+```powershell
+.\initial-setup.ps1
+```
+
+**macOS, Linux, or Git Bash:**
+
+```bash
+bash ./initial-setup.sh
+```
+
+Both scripts download the pinned MicroPython 1.29.0 ESP32-S3 firmware
+(`ESP32_GENERIC_S3-20260824-v1.29.0.bin`) into `assets/` only if it is not
+already there. The firmware binary is ignored by Git. The scripts erase the
+badge's entire flash, install the firmware using automatic serial-port
+detection, and use `deploy.py` to copy the eBadge library, the prepared logo
+image, and example 04 as `/main.py`. The Bash script also needs `curl` or
+`wget` if it must download the firmware.
+
+Erasing flash removes programs and other files already stored on the badge.
+After flashing, the scripts wait for MicroPython's first-boot filesystem setup
+and retry deployment if the badge is not ready. When setup finishes, power
+cycle the badge or press its reset button to run the logo program. The scripts
+do not take a port argument; if automatic detection fails, follow the manual
+steps below and specify the correct port.
+
+### Manual firmware setup
+
+For manual setup, first find the serial port assigned to the badge:
 
 - **Windows:** a port such as `COM3` in Device Manager under **Ports (COM & LPT)**.
 - **macOS:** usually `/dev/cu.usbmodem...` or `/dev/cu.usbserial...`.
@@ -209,12 +242,12 @@ Erase the badge flash and install the firmware. Both commands try to find the
 Espressif device automatically:
 
 ```sh
-python -m esptool erase_flash
-python -m esptool --baud 460800 write_flash 0 FIRMWARE.bin
+python -m esptool erase-flash
+python -m esptool --baud 460800 write-flash 0 FIRMWARE.bin
 ```
 
 If automatic detection does not find the badge, specify its serial port by
-adding `--port <PORT>` before `erase_flash` or `write_flash`.
+adding `--port <PORT>` before `erase-flash` or `write-flash`.
 
 If the board does not enter download mode, hold **BOOT** while starting the
 flash operation, then release it once flashing begins. Check the installed
@@ -477,6 +510,20 @@ python deploy.py --directory photos
 
 You can combine `--directory` with `--install-library`, a program, and asset
 options in one deployment command.
+
+To clear Python source and bytecode files from the badge before installing a
+fresh copy of the library and a program, use `--erase-python`:
+
+```sh
+python deploy.py --erase-python --install-library examples/01_button_led.py
+```
+
+This recursively deletes every `.py`, `.mpy`, and `.pyc` file, including
+`/main.py`, `/boot.py`, and installed libraries. It keeps non-Python assets
+such as BMP images and photos. When combined with deployment options, removal
+happens before the requested library, program, and assets are copied. Review
+the paths on the badge before using this option; deleting `/boot.py` or
+`/main.py` changes startup behavior.
 
 To use the button-controlled program selector, deploy it as the badge's
 `main.py` and copy the programs you want to run as assets. Up/Down selects a

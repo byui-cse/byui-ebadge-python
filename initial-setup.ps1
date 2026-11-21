@@ -60,17 +60,18 @@ if ((Test-Path -LiteralPath $FirmwarePath -PathType Leaf) -and
 }
 
 Write-Host "Erasing flash and installing MicroPython (esptool will detect the port)."
-& $PythonCommand @PythonPrefixArgs -m esptool erase_flash
+& $PythonCommand @PythonPrefixArgs -m esptool erase-flash
 if ($LASTEXITCODE -ne 0) {
     throw "esptool could not erase the board flash."
 }
 
-& $PythonCommand @PythonPrefixArgs -m esptool --baud 460800 write_flash 0 $FirmwarePath
+& $PythonCommand @PythonPrefixArgs -m esptool --baud 460800 write-flash 0 $FirmwarePath
 if ($LASTEXITCODE -ne 0) {
     throw "esptool could not write the firmware."
 }
 
 Write-Host "Deploying the eBadge library, prepared Python logo, and example 04."
+Write-Host "Running: $PythonCommand $($PythonPrefixArgs -join ' ') $DeployScript --install-library --asset $LogoPath $ExampleScript"
 Write-Host "Waiting for the firmware's first-boot filesystem setup to finish."
 Start-Sleep -Seconds 3
 

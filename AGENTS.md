@@ -21,6 +21,12 @@ This repository develops a user-friendly MicroPython wrapper for the BYU-Idaho e
 - Do not require pip packaging as the only way to use the project. Once the API is stable, a versioned host-side package may supplement the source checkout for simulator use. Badge deployment remains a separate transfer of MicroPython-compatible files.
 - Keep distribution tradeoffs in `specifications/user-workflow.md` and summarize practical setup steps in `README.md`.
 
+## Cross-platform initial setup scripts
+
+- Keep `initial-setup.sh` and `initial-setup.ps1` in sync: both must provide the same setup capabilities, including downloading the same pinned firmware only when absent, ignoring the binary under `assets/`, flashing without a specified port, and deploying the library, prepared logo, and example 04.
+- When changing setup behavior, update both scripts and the corresponding README instructions. Keep their firmware version, flash options, automatic port detection, first-boot wait/retries, deployed files, and post-deployment restart guidance aligned; document platform-specific prerequisites.
+- Do not run either script as part of routine checks: they erase and reflash the physical badge.
+
 ## README onboarding requirement
 
 - Review the README from the perspective of a Python programmer using MicroPython and an ESP32 for the first time. Define unfamiliar terms and distinguish host-side Python from MicroPython running on the badge.

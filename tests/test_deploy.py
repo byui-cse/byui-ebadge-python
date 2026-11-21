@@ -61,6 +61,26 @@ def test_build_command_copies_library_program_assets_and_directories(tmp_path):
     ]
 
 
+def test_build_command_erases_python_files_before_copying(tmp_path):
+    program = tmp_path / "show.py"
+
+    command = deploy.build_command(
+        "auto",
+        erase_python=True,
+        install_library=True,
+        program=program,
+    )
+
+    assert command[:5] == [sys.executable, "-m", "mpremote", "connect", "auto"]
+    assert command[5:7] == [
+        "run",
+        str(deploy.PROJECT_ROOT / "tools" / "erase_python_files.py"),
+    ]
+    assert command[7] == "+"
+    assert command[8:10] == ["fs", "cp"]
+    assert command[-4:] == ["fs", "cp", str(program), ":main.py"]
+
+
 def test_main_runs_mpremote_and_returns_its_exit_code(tmp_path, monkeypatch):
     program = tmp_path / "show.py"
     program.write_text("print('hello')\n")
@@ -95,6 +115,25 @@ def test_main_runs_mpremote_and_returns_its_exit_code(tmp_path, monkeypatch):
     assert str(program.resolve()) in command
     assert str(asset.resolve()) in command
     assert str(photos.resolve()) in command
+
+
+def test_main_allows_erasing_python_files_without_copy_arguments(monkeypatch):
+    calls = []
+
+    def fake_run(command, check):
+        calls.append((command, check))
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(sys, "argv", ["deploy.py", "--erase-python"])
+    monkeypatch.setattr(deploy.subprocess, "run", fake_run)
+
+    assert deploy.main() == 0
+    command, check = calls[0]
+    assert check is False
+    assert command[-2:] == [
+        "run",
+        str(deploy.PROJECT_ROOT / "tools" / "erase_python_files.py"),
+    ]
 
 
 def test_main_rejects_missing_program_before_running_mpremote(monkeypatch):

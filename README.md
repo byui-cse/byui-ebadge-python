@@ -478,6 +478,18 @@ At the MicroPython `>>>` prompt, run the deployed file with:
 exec(open("/03_button_tone.py").read())
 ```
 
+If you want to call its `main()` function directly, import the module and call
+the function:
+
+```python
+button_tone = __import__("03_button_tone")
+button_tone.main()
+```
+
+The usual `import module_name` syntax cannot be used here because the example
+filename starts with a number. For files with names that start with a letter,
+use `import module_name` followed by `module_name.main()`.
+
 The same command works with `/main.py` if you used the default deployment
 name. Press **Ctrl-C** to interrupt a running program; press **Ctrl-]** to
 leave the REPL. Programs that define a `main()` function can also be imported
